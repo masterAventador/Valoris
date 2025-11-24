@@ -1,0 +1,95 @@
+# Visual Studio 2022 cache/options
+.vs/
+*.vsidx
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Visual Studio Code
+.vscode/
+
+# JetBrains Rider
+.idea/
+*.sln.iml
+
+# Build results
+Binaries/
+Build/
+DerivedDataCache/
+Intermediate/
+Saved/
+
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+*.ipa
+
+# Unreal Engine specific
+*.uasset
+*.umap
+*.upk
+*.udk
+
+# Crash logs
+*.log
+
+# Autosave files
+*_BuiltData.uasset
+*.tmp
+*~
+
+# Cache files
+*.VC.db
+*.VC.VC.opendb
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Linux
+*~
+.directory
+
+# Starter Content (uncomment if you don't want to track starter content)
+# Content/StarterContent/
+
+# Plugin binaries
+Plugins/*/Binaries/
+Plugins/*/Intermediate/
+
+# Marketplace plugins (uncomment if you want to ignore them)
+# Plugins/*/
+
+# Android/iOS specific
+*.apk
+*.ipa
+*.keystore
