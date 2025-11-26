@@ -3,7 +3,8 @@
     "allow": [
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "Bash(git push)"
+      "Bash(git push)",
+      "Bash(\"G:/Unreal Engines/UE_5.7/Engine/Build/BatchFiles/Build.bat\" ValorisEditor Win64 Development -Project=\"F:/Valoris/Valoris.uproject\" -WaitMutex)"
     ],
     "deny": [],
     "ask": []

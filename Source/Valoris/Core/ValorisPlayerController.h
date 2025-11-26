@@ -9,6 +9,7 @@
 class UInputMappingContext;
 class UInputAction;
 struct FInputActionValue;
+class AValorisSpectatorPawn;
 
 /**
  * 玩家控制器
@@ -22,6 +23,9 @@ class VALORIS_API AValorisPlayerController : public APlayerController
 public:
 	AValorisPlayerController();
 
+	// 获取相机Pawn
+	AValorisSpectatorPawn* GetCameraPawn() const;
+
 protected:
 	virtual void BeginPlay() override;
 	virtual void SetupInputComponent() override;
@@ -30,14 +34,33 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
 	TObjectPtr<UInputMappingContext> DefaultMappingContext;
 
-	// 点击移动
+	// 右键点击（移动/攻击）
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
 	TObjectPtr<UInputAction> RightClickAction;
 
-	// 处理右键点击
+	// 相机缩放
+	UPROPERTY(EditDefaultsOnly, Category = "Input")
+	TObjectPtr<UInputAction> CameraZoomAction;
+
+	// 相机旋转
+	UPROPERTY(EditDefaultsOnly, Category = "Input")
+	TObjectPtr<UInputAction> CameraRotateAction;
+
+	// 聚焦英雄
+	UPROPERTY(EditDefaultsOnly, Category = "Input")
+	TObjectPtr<UInputAction> FocusHeroAction;
+
+	// 输入处理
 	void OnRightClick(const FInputActionValue& Value);
+	void OnCameraZoom(const FInputActionValue& Value);
+	void OnCameraRotate(const FInputActionValue& Value);
+	void OnFocusHero(const FInputActionValue& Value);
 
 private:
 	// 获取鼠标点击位置的世界坐标
 	bool GetMouseHitLocation(FVector& OutLocation) const;
+
+	// 缓存的英雄引用
+	UPROPERTY()
+	TWeakObjectPtr<AActor> ControlledHero;
 };
