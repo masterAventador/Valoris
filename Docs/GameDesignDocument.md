@@ -267,7 +267,7 @@ InputAction → GameplayTag → ValorisInputComponent → ASC → GameplayAbilit
 
 ### P0（必须实现）
 
-- [ ] RTS风格相机
+- [x] RTS风格相机
 - [ ] 英雄点击移动
 - [ ] 英雄自动攻击
 - [ ] 敌人沿路径移动
