@@ -9,6 +9,9 @@ AValorisSpectatorPawn::AValorisSpectatorPawn()
 {
 	PrimaryActorTick.bCanEverTick = true;
 
+	// 禁用 SpectatorPawn 默认的移动输入
+	bAddDefaultMovementBindings = false;
+
 	// 创建弹簧臂
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
 	SpringArm->SetupAttachment(RootComponent);
