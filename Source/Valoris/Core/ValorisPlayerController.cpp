@@ -25,6 +25,14 @@ void AValorisPlayerController::BeginPlay()
 			Subsystem->AddMappingContext(DefaultMappingContext, 0);
 		}
 	}
+
+	// 限制鼠标在视口内（仅打包后生效）
+#if !WITH_EDITOR
+	FInputModeGameAndUI InputMode;
+	InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::LockAlways);
+	InputMode.SetHideCursorDuringCapture(false);
+	SetInputMode(InputMode);
+#endif
 }
 
 void AValorisPlayerController::SetupInputComponent()
