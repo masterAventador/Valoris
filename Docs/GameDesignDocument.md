@@ -359,5 +359,6 @@ Content/
 |------|------|----------|
 | 2025-11-26 | 40分钟 | 创建开发文档、GameMode、PlayerController，配置 GAS 模块依赖 |
 | 2025-11-27 | 20分钟 | 添加 RTS 风格相机系统（SpectatorPawn、边缘平移、缩放、旋转） |
+| 2025-11-29 | 1.5小时 | 创建角色基类 ValorisCharacterBase（带 ASC）、属性集 ValorisAttributeSet、英雄 AricHero |
 
-**累计开发时间**: 1小时 / 90小时
+**累计开发时间**: 2.5小时 / 90小时
