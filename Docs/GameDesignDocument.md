@@ -317,17 +317,19 @@ InputAction → GameplayTag → ValorisInputComponent → ASC → GameplayAbilit
 
 ```
 Content/
-├── Blueprints/Heroes/      # 英雄蓝图
-├── Blueprints/Towers/      # 塔蓝图
-├── Blueprints/Enemies/     # 敌人蓝图
-├── Data/                   # DataAsset
-├── Input/                  # InputAction, IMC
-├── UI/                     # Widget蓝图
-├── Maps/                   # 关卡
-├── Meshes/                 # 模型
-├── Materials/              # 材质
-├── Animations/             # 动画
-└── Audio/                  # 音效
+├── Blueprints/
+│   ├── Core/              # GameMode、PlayerController 蓝图
+│   ├── Heroes/            # 英雄蓝图
+│   ├── Towers/            # 塔蓝图
+│   └── Enemies/           # 敌人蓝图
+├── Data/                  # DataAsset
+├── Input/                 # InputAction, IMC
+├── UI/                    # Widget蓝图
+├── Maps/                  # 关卡
+├── Meshes/                # 模型
+├── Materials/             # 材质
+├── Animations/            # 动画
+└── Audio/                 # 音效
 ```
 
 ---
