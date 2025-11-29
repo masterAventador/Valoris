@@ -10,6 +10,7 @@ class UInputMappingContext;
 class UInputAction;
 struct FInputActionValue;
 class AValorisSpectatorPawn;
+class AValorisCharacterBase;
 
 /**
  * 玩家控制器
@@ -25,6 +26,12 @@ public:
 
 	// 获取相机Pawn
 	AValorisSpectatorPawn* GetCameraPawn() const;
+
+	// 设置控制的英雄
+	void SetControlledHero(AValorisCharacterBase* Hero);
+
+	// 获取控制的英雄
+	AValorisCharacterBase* GetControlledHero() const;
 
 protected:
 	virtual void BeginPlay() override;
@@ -60,7 +67,7 @@ private:
 	// 获取鼠标点击位置的世界坐标
 	bool GetMouseHitLocation(FVector& OutLocation) const;
 
-	// 缓存的英雄引用
+	// 控制的英雄
 	UPROPERTY()
-	TWeakObjectPtr<AActor> ControlledHero;
+	TObjectPtr<AValorisCharacterBase> ControlledHero;
 };

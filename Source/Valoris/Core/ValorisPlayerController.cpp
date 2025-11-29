@@ -4,7 +4,10 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
+#include "Kismet/GameplayStatics.h"
 #include "../Camera/ValorisSpectatorPawn.h"
+#include "../Character/ValorisCharacterBase.h"
+#include "../Character/HeroAIController.h"
 
 AValorisPlayerController::AValorisPlayerController()
 {
@@ -33,6 +36,18 @@ void AValorisPlayerController::BeginPlay()
 	InputMode.SetHideCursorDuringCapture(false);
 	SetInputMode(InputMode);
 #endif
+
+	// 查找场景中的英雄
+	AActor* FoundHero = UGameplayStatics::GetActorOfClass(GetWorld(), AValorisCharacterBase::StaticClass());
+	if (FoundHero)
+	{
+		ControlledHero = Cast<AValorisCharacterBase>(FoundHero);
+		UE_LOG(LogTemp, Warning, TEXT("Found hero: %s"), *ControlledHero->GetName());
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("No hero found in level!"));
+	}
 }
 
 void AValorisPlayerController::SetupInputComponent()
@@ -72,13 +87,40 @@ AValorisSpectatorPawn* AValorisPlayerController::GetCameraPawn() const
 	return Cast<AValorisSpectatorPawn>(GetPawn());
 }
 
+void AValorisPlayerController::SetControlledHero(AValorisCharacterBase* Hero)
+{
+	ControlledHero = Hero;
+}
+
+AValorisCharacterBase* AValorisPlayerController::GetControlledHero() const
+{
+	return ControlledHero;
+}
+
 void AValorisPlayerController::OnRightClick(const FInputActionValue& Value)
 {
 	FVector HitLocation;
 	if (GetMouseHitLocation(HitLocation))
 	{
-		// TODO: 通知英雄移动到目标位置
-		UE_LOG(LogTemp, Log, TEXT("Right click at: %s"), *HitLocation.ToString());
+		UE_LOG(LogTemp, Warning, TEXT("Right click at: %s"), *HitLocation.ToString());
+
+		// 通知英雄移动到目标位置
+		if (ControlledHero)
+		{
+			if (AHeroAIController* HeroAI = Cast<AHeroAIController>(ControlledHero->GetController()))
+			{
+				UE_LOG(LogTemp, Warning, TEXT("Moving hero to location"));
+				HeroAI->MoveToTargetLocation(HitLocation);
+			}
+			else
+			{
+				UE_LOG(LogTemp, Error, TEXT("Hero has no AIController!"));
+			}
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("No ControlledHero!"));
+		}
 	}
 }
 
@@ -104,7 +146,7 @@ void AValorisPlayerController::OnFocusHero(const FInputActionValue& Value)
 {
 	if (AValorisSpectatorPawn* CameraPawn = GetCameraPawn())
 	{
-		if (ControlledHero.IsValid())
+		if (ControlledHero)
 		{
 			CameraPawn->FocusOnLocation(ControlledHero->GetActorLocation());
 		}
