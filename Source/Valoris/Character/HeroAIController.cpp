@@ -2,8 +2,10 @@
 
 #include "HeroAIController.h"
 #include "Navigation/PathFollowingComponent.h"
+#include "AbilitySystemComponent.h"
 #include "ValorisCharacterBase.h"
 #include "../GAS/ValorisAttributeSet.h"
+#include "../GAS/ValorisGameplayTags.h"
 
 AHeroAIController::AHeroAIController()
 {
@@ -14,12 +16,6 @@ void AHeroAIController::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	// 更新攻击冷却
-	if (AttackCooldownTimer > 0.f)
-	{
-		AttackCooldownTimer -= DeltaTime;
-	}
-
 	// 如果有攻击目标
 	if (AttackTarget && IsValid(AttackTarget))
 	{
@@ -29,10 +25,8 @@ void AHeroAIController::Tick(float DeltaTime)
 			StopMovement();
 			bIsChasing = false;
 
-			if (AttackCooldownTimer <= 0.f)
-			{
-				PerformAttack();
-			}
+			// 尝试攻击（冷却由 GAS 管理）
+			PerformAttack();
 		}
 		else if (!bIsChasing)
 		{
@@ -110,17 +104,17 @@ void AHeroAIController::PerformAttack()
 		return;
 	}
 
-	// 获取攻击速度来计算冷却时间
-	float AttackSpeed = 1.f;
-	if (UValorisAttributeSet* Attributes = Hero->GetAttributeSet())
+	// 通过 GAS 触发攻击技能（冷却由 GA 内部管理）
+	UAbilitySystemComponent* ASC = Hero->GetAbilitySystemComponent();
+	if (ASC)
 	{
-		AttackSpeed = FMath::Max(0.1f, Attributes->GetAttackSpeed());
-	}
-	AttackCooldownTimer = 1.f / AttackSpeed;
+		// 构造事件数据，传入攻击目标
+		FGameplayEventData EventData;
+		EventData.Target = AttackTarget;
 
-	// TODO: 通过 GAS 触发攻击技能
-	// 现在先用日志占位
-	UE_LOG(LogTemp, Warning, TEXT("%s attacks %s"), *Hero->GetName(), *AttackTarget->GetName());
+		// 触发攻击事件
+		ASC->HandleGameplayEvent(FValorisGameplayTags::Get().Event_Attack, &EventData);
+	}
 }
 
 void AHeroAIController::ChaseTarget()

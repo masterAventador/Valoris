@@ -269,7 +269,7 @@ InputAction → GameplayTag → ValorisInputComponent → ASC → GameplayAbilit
 
 - [x] RTS风格相机
 - [x] 英雄点击移动
-- [ ] 英雄自动攻击
+- [x] 英雄自动攻击
 - [ ] 敌人沿路径移动
 - [ ] 敌人波次生成
 - [ ] 防御塔建造
@@ -363,5 +363,6 @@ Content/
 | 2025-11-27 | 20分钟 | 添加 RTS 风格相机系统（SpectatorPawn、边缘平移、缩放、旋转） |
 | 2025-11-29 | 1.5小时 | 创建角色基类 ValorisCharacterBase（带 ASC）、属性集 ValorisAttributeSet、英雄 AricHero |
 | 2025-11-30 | 40分钟 | 实现英雄点击移动功能（HeroAIController、NavMesh 导航） |
+| 2025-12-01 | 2小时 | 实现英雄自动攻击：敌人基类 EnemyBase、GameplayTags 集中管理、GA_HeroAttack 攻击技能、ExecCalc_Damage 伤害计算、GE_Damage 伤害效果、GE_Cooldown_Attack 攻速冷却、ValorisAssetManager 初始化时机优化 |
 
-**累计开发时间**: 3.2小时 / 90小时
+**累计开发时间**: 5.2小时 / 90小时

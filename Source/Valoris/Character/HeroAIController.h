@@ -52,9 +52,6 @@ private:
 	UPROPERTY()
 	TObjectPtr<AValorisCharacterBase> AttackTarget;
 
-	// 攻击冷却计时器
-	float AttackCooldownTimer = 0.f;
-
 	// 是否正在追击
 	bool bIsChasing = false;
 };
