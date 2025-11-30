@@ -68,7 +68,7 @@ protected:
 
 	// 相机俯仰角
 	UPROPERTY(EditDefaultsOnly, Category = "Camera|Rotation")
-	float CameraPitch = -50.f;
+	float CameraPitch = -55.f;
 
 	// 目标缩放距离（用于平滑插值）
 	float TargetArmLength;

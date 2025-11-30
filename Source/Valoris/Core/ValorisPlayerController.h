@@ -67,6 +67,9 @@ private:
 	// 获取鼠标点击位置的世界坐标
 	bool GetMouseHitLocation(FVector& OutLocation) const;
 
+	// 获取鼠标下的 Actor
+	AActor* GetActorUnderCursor() const;
+
 	// 控制的英雄
 	UPROPERTY()
 	TObjectPtr<AValorisCharacterBase> ControlledHero;

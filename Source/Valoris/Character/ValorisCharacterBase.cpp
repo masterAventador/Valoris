@@ -4,14 +4,12 @@
 #include "AbilitySystemComponent.h"
 #include "GameplayAbilitySpec.h"
 #include "../GAS/ValorisAttributeSet.h"
-#include "HeroAIController.h"
 
 AValorisCharacterBase::AValorisCharacterBase()
 {
 	PrimaryActorTick.bCanEverTick = false;
 
-	// 配置 AIController
-	AIControllerClass = AHeroAIController::StaticClass();
+	// 子类各自配置 AIController
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 
 	// 创建 ASC

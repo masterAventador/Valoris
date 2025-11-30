@@ -8,6 +8,8 @@
 #include "../Camera/ValorisSpectatorPawn.h"
 #include "../Character/ValorisCharacterBase.h"
 #include "../Character/HeroAIController.h"
+#include "../Character/AricHero.h"
+#include "../Enemy/EnemyBase.h"
 
 AValorisPlayerController::AValorisPlayerController()
 {
@@ -37,16 +39,11 @@ void AValorisPlayerController::BeginPlay()
 	SetInputMode(InputMode);
 #endif
 
-	// 查找场景中的英雄
-	AActor* FoundHero = UGameplayStatics::GetActorOfClass(GetWorld(), AValorisCharacterBase::StaticClass());
+	// 查找场景中的英雄（用 AAricHero 类型，避免找到敌人）
+	AActor* FoundHero = UGameplayStatics::GetActorOfClass(GetWorld(), AAricHero::StaticClass());
 	if (FoundHero)
 	{
 		ControlledHero = Cast<AValorisCharacterBase>(FoundHero);
-		UE_LOG(LogTemp, Warning, TEXT("Found hero: %s"), *ControlledHero->GetName());
-	}
-	else
-	{
-		UE_LOG(LogTemp, Error, TEXT("No hero found in level!"));
 	}
 }
 
@@ -99,27 +96,32 @@ AValorisCharacterBase* AValorisPlayerController::GetControlledHero() const
 
 void AValorisPlayerController::OnRightClick(const FInputActionValue& Value)
 {
-	FVector HitLocation;
-	if (GetMouseHitLocation(HitLocation))
+	if (!ControlledHero)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Right click at: %s"), *HitLocation.ToString());
+		return;
+	}
 
-		// 通知英雄移动到目标位置
-		if (ControlledHero)
+	AHeroAIController* HeroAI = Cast<AHeroAIController>(ControlledHero->GetController());
+	if (!HeroAI)
+	{
+		return;
+	}
+
+	// 检测是否点击了敌人
+	AActor* ClickedActor = GetActorUnderCursor();
+	if (AEnemyBase* Enemy = Cast<AEnemyBase>(ClickedActor))
+	{
+		// 点击敌人，设置攻击目标
+		HeroAI->SetAttackTarget(Enemy);
+	}
+	else
+	{
+		// 点击地面，移动
+		FVector HitLocation;
+		if (GetMouseHitLocation(HitLocation))
 		{
-			if (AHeroAIController* HeroAI = Cast<AHeroAIController>(ControlledHero->GetController()))
-			{
-				UE_LOG(LogTemp, Warning, TEXT("Moving hero to location"));
-				HeroAI->MoveToTargetLocation(HitLocation);
-			}
-			else
-			{
-				UE_LOG(LogTemp, Error, TEXT("Hero has no AIController!"));
-			}
-		}
-		else
-		{
-			UE_LOG(LogTemp, Error, TEXT("No ControlledHero!"));
+			HeroAI->ClearAttackTarget();
+			HeroAI->MoveToTargetLocation(HitLocation);
 		}
 	}
 }
@@ -162,4 +164,14 @@ bool AValorisPlayerController::GetMouseHitLocation(FVector& OutLocation) const
 		return true;
 	}
 	return false;
+}
+
+AActor* AValorisPlayerController::GetActorUnderCursor() const
+{
+	FHitResult HitResult;
+	if (GetHitResultUnderCursor(ECC_Pawn, false, HitResult))
+	{
+		return HitResult.GetActor();
+	}
+	return nullptr;
 }

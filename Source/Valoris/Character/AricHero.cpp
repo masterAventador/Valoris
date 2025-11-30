@@ -1,8 +1,11 @@
 // Copyright Valoris. All Rights Reserved.
 
 #include "AricHero.h"
+#include "HeroAIController.h"
 
 AAricHero::AAricHero()
 {
-	// Aric 是近战战士，可以在蓝图中配置具体属性
+	// 英雄使用 HeroAIController
+	AIControllerClass = AHeroAIController::StaticClass();
+	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 }
