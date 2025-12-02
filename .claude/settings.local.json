@@ -4,7 +4,11 @@
       "Bash(git add:*)",
       "Bash(git commit:*)",
       "Bash(git push)",
-      "Bash(\"G:/Unreal Engines/UE_5.7/Engine/Build/BatchFiles/Build.bat\" ValorisEditor Win64 Development -Project=\"F:/Valoris/Valoris.uproject\" -WaitMutex)"
+      "Bash(\"G:/Unreal Engines/UE_5.7/Engine/Build/BatchFiles/Build.bat\" ValorisEditor Win64 Development -Project=\"F:/Valoris/Valoris.uproject\" -WaitMutex)",
+      "Bash(git -C \"F:/Valoris\" diff --stat)",
+      "Bash(git -C \"F:/Valoris\" log --oneline -3)",
+      "Bash(git -C \"F:/Valoris\" add -A)",
+      "Bash(git -C \"F:/Valoris\" commit -m \"实现敌人沿 Spline 路径移动\n\n- 新增 EnemyPath Actor，使用 SplineComponent 定义敌人路线\n- 修改 EnemyBase，在 Tick 中沿 Spline 路径移动\n- 简化 EnemyAIController，移除旧的路径点导航逻辑\n- 更新编辑器配置文档，添加 Spline 编辑说明\")"
     ],
     "deny": [],
     "ask": []

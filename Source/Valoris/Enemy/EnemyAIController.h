@@ -8,7 +8,8 @@
 
 /**
  * 敌人 AI 控制器
- * 负责敌人沿路径移动到基地
+ * 敌人沿 Spline 路径移动，移动逻辑在 EnemyBase::Tick 中实现
+ * 此控制器预留给后续扩展（如敌人 AI 行为、战斗逻辑等）
  */
 UCLASS()
 class VALORIS_API AEnemyAIController : public AAIController
@@ -16,21 +17,5 @@ class VALORIS_API AEnemyAIController : public AAIController
 	GENERATED_BODY()
 
 public:
-	// 开始沿路径移动
-	UFUNCTION(BlueprintCallable, Category = "AI")
-	void StartPathMovement();
-
-	// 移动到下一个路径点
-	void MoveToNextPathPoint();
-
-protected:
-	virtual void OnMoveCompleted(FAIRequestID RequestID, const FPathFollowingResult& Result) override;
-
-private:
-	// 当前路径点索引
-	int32 CurrentPathIndex = 0;
-
-	// 路径点数组（后续从关卡或 Spline 获取）
-	UPROPERTY()
-	TArray<FVector> PathPoints;
+	AEnemyAIController();
 };
