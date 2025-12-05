@@ -1,7 +1,7 @@
 // Copyright Valoris. All Rights Reserved.
 
 #include "GE_Damage.h"
-#include "MMC_Damage.h"
+#include "ExecCalc_Damage.h"
 
 UGE_Damage::UGE_Damage()
 {

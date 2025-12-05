@@ -1,6 +1,6 @@
 // Copyright Valoris. All Rights Reserved.
 
-#include "MMC_Damage.h"
+#include "ExecCalc_Damage.h"
 #include "ValorisAttributeSet.h"
 #include "AbilitySystemComponent.h"
 

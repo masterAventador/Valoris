@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameplayEffectExecutionCalculation.h"
-#include "MMC_Damage.generated.h"
+#include "ExecCalc_Damage.generated.h"
 
 /**
  * 伤害执行计算类

@@ -271,7 +271,7 @@ InputAction → GameplayTag → ValorisInputComponent → ASC → GameplayAbilit
 - [x] 英雄点击移动
 - [x] 英雄自动攻击
 - [x] 敌人沿路径移动
-- [ ] 敌人波次生成
+- [x] 敌人波次生成
 - [ ] 防御塔建造
 - [ ] 防御塔攻击
 - [ ] 资源系统
@@ -365,5 +365,6 @@ Content/
 | 2025-11-30 | 40分钟 | 实现英雄点击移动功能（HeroAIController、NavMesh 导航） |
 | 2025-12-01 | 2小时 | 实现英雄自动攻击：敌人基类 EnemyBase、GameplayTags 集中管理、GA_HeroAttack 攻击技能、ExecCalc_Damage 伤害计算、GE_Damage 伤害效果、GE_Cooldown_Attack 攻速冷却、ValorisAssetManager 初始化时机优化 |
 | 2025-12-02 | 30分钟 | 实现敌人沿 Spline 路径移动：EnemyPath Actor、EnemyBase Tick 移动逻辑 |
+| 2025-12-06 | 1小时 | 实现敌人波次生成：WaveData DataAsset、GameMode 波次管理逻辑、自动查找 EnemyPath |
 
-**累计开发时间**: 5.7小时 / 90小时
+**累计开发时间**: 6.7小时 / 90小时

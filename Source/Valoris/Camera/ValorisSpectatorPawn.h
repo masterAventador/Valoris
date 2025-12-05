@@ -60,7 +60,7 @@ protected:
 
 	// 最大缩放距离
 	UPROPERTY(EditDefaultsOnly, Category = "Camera|Zoom")
-	float MaxZoomDistance = 3000.f;
+	float MaxZoomDistance = 5000.f;
 
 	// 相机旋转速度
 	UPROPERTY(EditDefaultsOnly, Category = "Camera|Rotation")

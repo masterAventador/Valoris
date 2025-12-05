@@ -15,7 +15,7 @@ AValorisSpectatorPawn::AValorisSpectatorPawn()
 	// 创建弹簧臂
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
 	SpringArm->SetupAttachment(RootComponent);
-	SpringArm->TargetArmLength = 2000.f;
+	SpringArm->TargetArmLength = MaxZoomDistance;
 	SpringArm->SetRelativeRotation(FRotator(CameraPitch, 0.f, 0.f));
 	SpringArm->bDoCollisionTest = false;
 	SpringArm->bEnableCameraLag = true;
