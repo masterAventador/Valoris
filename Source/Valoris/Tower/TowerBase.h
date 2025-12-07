@@ -11,6 +11,7 @@ class UAbilitySystemComponent;
 class UValorisAttributeSet;
 class UGameplayAbility;
 class UGameplayEffect;
+class AEnemyBase;
 
 /**
  * 防御塔基类
@@ -37,9 +38,16 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
+	virtual void Tick(float DeltaTime) override;
 
 	// 初始化 GAS
 	void InitializeAbilitySystem();
+
+	// 索敌逻辑
+	AEnemyBase* FindTargetEnemy() const;
+
+	// 尝试攻击当前目标
+	void TryAttackTarget();
 
 	// 授予默认技能
 	void GiveDefaultAbilities();
@@ -78,4 +86,10 @@ protected:
 	// 默认属性效果
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Tower|Config")
 	TSubclassOf<UGameplayEffect> DefaultAttributeEffect;
+
+	//~ 攻击状态
+
+	// 当前攻击目标
+	UPROPERTY()
+	TWeakObjectPtr<AEnemyBase> CurrentTarget;
 };

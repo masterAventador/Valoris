@@ -436,10 +436,66 @@ Enter Build Mode (Tower Class = BP_TowerBase)
 
 ---
 
+## 10. 防御塔攻击配置
+
+### 10.1 创建塔属性 GameplayEffect
+
+路径：`Content/Blueprints/GAS/GE_TowerDefaultAttributes`
+
+**创建方法**：
+1. Content Browser 右键 → Blueprint Class
+2. 搜索并选择父类 `GameplayEffect`
+3. 命名为 `GE_TowerDefaultAttributes`
+
+**配置 Modifiers**：
+
+| Attribute | Modifier Op | Magnitude | 说明 |
+|-----------|-------------|-----------|------|
+| Health | Override | 500 | 塔的生命值 |
+| MaxHealth | Override | 500 | 最大生命值 |
+| AttackPower | Override | 25 | 攻击力 |
+| AttackSpeed | Override | 1.0 | 攻速（每秒攻击次数） |
+| AttackRange | Override | 500 | 攻击范围（单位） |
+| Defense | Override | 10 | 防御力 |
+
+**Duration Policy**: Instant
+
+### 10.2 创建塔攻击技能蓝图
+
+路径：`Content/Blueprints/GAS/BP_GA_TowerAttack`
+
+**创建方法**：
+1. Content Browser 右键 → Blueprint Class
+2. 搜索并选择父类 `GA_TowerAttack`
+3. 命名为 `BP_GA_TowerAttack`
+
+**配置**：
+- Damage Effect → `GE_Damage`（复用英雄的伤害效果）
+
+### 10.3 配置 BP_TowerBase
+
+在 `BP_TowerBase` 中配置：
+
+| 属性 | 值 |
+|------|------|
+| Default Abilities | 添加 `BP_GA_TowerAttack` |
+| Default Attribute Effect | `GE_TowerDefaultAttributes` |
+
+### 10.4 测试塔攻击
+
+1. 确保场景中有敌人生成（波次系统或手动放置）
+2. 按 B 键进入建造模式
+3. 左键点击放置塔
+4. 敌人进入塔攻击范围后，塔会自动攻击
+
+**注意**：塔的攻击范围默认 500 单位，可在 `GE_TowerDefaultAttributes` 中调整 `AttackRange`。
+
+---
+
 ## 更新记录
 
 | 日期 | 更新内容 |
 |------|----------|
 | 2025-11-28 | 创建文档，添加 Input 和核心蓝图配置说明 |
 | 2025-12-02 | 添加英雄配置、敌人路径配置、Spline 编辑说明 |
-| 2025-12-07 | 添加防御塔建造配置、建造预览材质创建说明 |
+| 2025-12-07 | 添加防御塔建造配置、建造预览材质创建说明、塔攻击配置 |

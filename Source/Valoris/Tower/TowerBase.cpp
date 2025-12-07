@@ -4,10 +4,14 @@
 #include "AbilitySystemComponent.h"
 #include "GameplayAbilitySpec.h"
 #include "../GAS/ValorisAttributeSet.h"
+#include "../GAS/ValorisGameplayTags.h"
+#include "../GAS/GA_TowerAttack.h"
+#include "../Enemy/EnemyBase.h"
+#include "Kismet/GameplayStatics.h"
 
 ATowerBase::ATowerBase()
 {
-	PrimaryActorTick.bCanEverTick = false;
+	PrimaryActorTick.bCanEverTick = true;
 
 	// 创建根组件
 	SceneRoot = CreateDefaultSubobject<USceneComponent>(TEXT("SceneRoot"));
@@ -34,6 +38,14 @@ void ATowerBase::BeginPlay()
 	Super::BeginPlay();
 
 	InitializeAbilitySystem();
+}
+
+void ATowerBase::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	// 自动索敌并攻击
+	TryAttackTarget();
 }
 
 void ATowerBase::InitializeAbilitySystem()
@@ -87,4 +99,131 @@ void ATowerBase::ApplyDefaultAttributes()
 	{
 		AbilitySystemComponent->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data.Get());
 	}
+}
+
+AEnemyBase* ATowerBase::FindTargetEnemy() const
+{
+	if (!AttributeSet)
+	{
+		return nullptr;
+	}
+
+	const float AttackRange = AttributeSet->GetAttackRange();
+	const FVector TowerLocation = GetActorLocation();
+
+	// 获取所有敌人
+	TArray<AActor*> FoundActors;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AEnemyBase::StaticClass(), FoundActors);
+
+	AEnemyBase* ClosestEnemy = nullptr;
+	float ClosestDistance = AttackRange;
+
+	for (AActor* Actor : FoundActors)
+	{
+		AEnemyBase* Enemy = Cast<AEnemyBase>(Actor);
+		if (!Enemy)
+		{
+			continue;
+		}
+
+		// 检查敌人是否存活
+		if (UValorisAttributeSet* EnemyAttributes = Enemy->GetAttributeSet())
+		{
+			if (EnemyAttributes->GetHealth() <= 0.f)
+			{
+				continue;
+			}
+		}
+
+		// 计算距离
+		const float Distance = FVector::Dist(TowerLocation, Enemy->GetActorLocation());
+		if (Distance <= ClosestDistance)
+		{
+			ClosestDistance = Distance;
+			ClosestEnemy = Enemy;
+		}
+	}
+
+	return ClosestEnemy;
+}
+
+void ATowerBase::TryAttackTarget()
+{
+	if (!AbilitySystemComponent)
+	{
+		return;
+	}
+
+	// 检查是否在攻击冷却中
+	if (AbilitySystemComponent->HasMatchingGameplayTag(FValorisGameplayTags::Get().Cooldown_Attack))
+	{
+		return;
+	}
+
+	// 检查当前目标是否有效
+	AEnemyBase* Target = CurrentTarget.Get();
+	if (Target)
+	{
+		// 检查目标是否在范围内
+		if (AttributeSet)
+		{
+			const float AttackRange = AttributeSet->GetAttackRange();
+			const float Distance = FVector::Dist(GetActorLocation(), Target->GetActorLocation());
+			if (Distance > AttackRange)
+			{
+				Target = nullptr;
+			}
+		}
+
+		// 检查目标是否存活
+		if (Target)
+		{
+			if (UValorisAttributeSet* EnemyAttributes = Target->GetAttributeSet())
+			{
+				if (EnemyAttributes->GetHealth() <= 0.f)
+				{
+					Target = nullptr;
+				}
+			}
+		}
+	}
+
+	// 如果没有有效目标，寻找新目标
+	if (!Target)
+	{
+		Target = FindTargetEnemy();
+		CurrentTarget = Target;
+	}
+
+	// 没有目标则返回
+	if (!Target)
+	{
+		return;
+	}
+
+	// 直接激活攻击技能
+	FGameplayEventData EventData;
+	EventData.Instigator = this;
+	EventData.Target = Target;
+
+	// 通过事件激活技能
+	AbilitySystemComponent->TriggerAbilityFromGameplayEvent(
+		AbilitySystemComponent->FindAbilitySpecFromClass(UGA_TowerAttack::StaticClass())->Handle,
+		AbilitySystemComponent->AbilityActorInfo.Get(),
+		FValorisGameplayTags::Get().Event_Attack,
+		&EventData,
+		*AbilitySystemComponent
+	);
+
+	// Debug: 画一条线到目标
+	DrawDebugLine(
+		GetWorld(),
+		GetActorLocation(),
+		Target->GetActorLocation(),
+		FColor::Red,
+		false,
+		0.2f,  // 持续0.2秒
+		0,
+		2.f    // 线宽
+	);
 }
