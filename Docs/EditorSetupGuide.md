@@ -339,9 +339,107 @@ if (Enemy && EnemyPath)
 
 ---
 
+## 9. 防御塔建造配置
+
+### 9.1 创建 InputAction
+
+路径：`Content/Input/Actions/`
+
+| 资产名称 | Value Type | 按键绑定 | 说明 |
+|----------|------------|----------|------|
+| IA_LeftClick | Bool (Digital) | Left Mouse Button | 左键确认建造 |
+| IA_Cancel | Bool (Digital) | Escape | ESC 取消建造 |
+
+在 `IMC_Valoris` 中添加这两个 InputAction 的绑定。
+
+### 9.2 创建塔蓝图
+
+路径：`Content/Blueprints/Towers/BP_TowerBase`
+
+**创建方法**：
+1. Content Browser 右键 → Blueprint Class
+2. 搜索并选择父类 `TowerBase`
+3. 命名为 `BP_TowerBase`
+
+**配置**：
+- Tower Mesh: 设置一个简单的 Static Mesh（如 Cylinder 或 Cube）
+- Build Cost: 建造花费（默认 100）
+- Default Abilities: 后续添加 `GA_TowerAttack`
+- Default Attribute Effect: 设置塔的初始属性
+
+### 9.3 创建建造预览蓝图
+
+路径：`Content/Blueprints/Building/BP_BuildPreview`
+
+**创建方法**：
+1. Content Browser 右键 → Blueprint Class
+2. 搜索并选择父类 `BuildPreview`
+3. 命名为 `BP_BuildPreview`
+
+**配置**：
+- Preview Mesh: 默认使用圆柱体，可自定义
+- Valid Material: 创建一个绿色半透明材质（表示可建造）
+- Invalid Material: 创建一个红色半透明材质（表示不可建造）
+- Overlap Check Radius: 检测重叠的半径（默认 100）
+
+**创建预览材质**：
+
+1. Content Browser 右键 → Material
+2. 命名为 `M_BuildPreview_Valid`
+3. 打开材质编辑器：
+   - Blend Mode: Translucent
+   - Base Color: 绿色 (0, 1, 0)
+   - Opacity: 0.5
+4. 复制并命名为 `M_BuildPreview_Invalid`
+   - Base Color: 红色 (1, 0, 0)
+
+### 9.4 配置 PlayerController
+
+在 `BP_ValorisPlayerController` 中配置：
+
+| 属性 | 值 |
+|------|------|
+| Left Click Action | IA_LeftClick |
+| Cancel Action | IA_Cancel |
+| Build Preview Class | BP_BuildPreview |
+
+### 9.5 测试建造系统
+
+**方法一：关卡蓝图测试**
+
+1. 打开关卡蓝图（Blueprints → Open Level Blueprint）
+2. 添加以下逻辑：
+
+```
+Event BeginPlay
+    ↓
+Delay (2秒，给点准备时间)
+    ↓
+Get Player Controller → Cast To ValorisPlayerController
+    ↓
+Enter Build Mode (Tower Class = BP_TowerBase)
+```
+
+**方法二：按键触发**
+
+1. 创建一个新的 InputAction `IA_BuildMode`（绑定 B 键）
+2. 在 PlayerController 中处理该输入，调用 `EnterBuildMode`
+
+**测试流程**：
+
+1. 运行游戏
+2. 进入建造模式后，鼠标位置会显示预览圆柱
+3. 预览跟随鼠标移动
+4. 绿色 = 可建造，红色 = 不可建造（与其他塔重叠）
+5. 左键点击确认建造
+6. ESC 取消建造模式
+
+---
+
 ## 更新记录
 
 | 日期 | 更新内容 |
 |------|----------|
 | 2025-11-28 | 创建文档，添加 Input 和核心蓝图配置说明 |
 | 2025-12-02 | 添加英雄配置、敌人路径配置、Spline 编辑说明 |
+| 2025-12-07 | 添加防御塔建造配置、建造预览材质创建说明 |

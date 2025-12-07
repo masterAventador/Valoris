@@ -11,6 +11,8 @@ class UInputAction;
 struct FInputActionValue;
 class AValorisSpectatorPawn;
 class AValorisCharacterBase;
+class ATowerBase;
+class ABuildPreview;
 
 /**
  * 玩家控制器
@@ -32,6 +34,24 @@ public:
 
 	// 获取控制的英雄
 	AValorisCharacterBase* GetControlledHero() const;
+
+	//~ 建造系统
+
+	// 进入建造模式
+	UFUNCTION(BlueprintCallable, Category = "Build")
+	void EnterBuildMode(TSubclassOf<ATowerBase> TowerClass);
+
+	// 退出建造模式
+	UFUNCTION(BlueprintCallable, Category = "Build")
+	void ExitBuildMode();
+
+	// 是否在建造模式
+	UFUNCTION(BlueprintCallable, Category = "Build")
+	bool IsInBuildMode() const { return bInBuildMode; }
+
+	// 确认建造
+	UFUNCTION(BlueprintCallable, Category = "Build")
+	void ConfirmBuild();
 
 protected:
 	virtual void BeginPlay() override;
@@ -57,11 +77,39 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
 	TObjectPtr<UInputAction> FocusHeroAction;
 
+	// 左键点击（建造确认）
+	UPROPERTY(EditDefaultsOnly, Category = "Input")
+	TObjectPtr<UInputAction> LeftClickAction;
+
+	// 取消键（ESC）
+	UPROPERTY(EditDefaultsOnly, Category = "Input")
+	TObjectPtr<UInputAction> CancelAction;
+
+	// 建造模式键（B）
+	UPROPERTY(EditDefaultsOnly, Category = "Input")
+	TObjectPtr<UInputAction> BuildModeAction;
+
+	// 建造预览类
+	UPROPERTY(EditDefaultsOnly, Category = "Build")
+	TSubclassOf<ABuildPreview> BuildPreviewClass;
+
+	// 默认建造的塔类型（测试用）
+	UPROPERTY(EditDefaultsOnly, Category = "Build")
+	TSubclassOf<ATowerBase> DefaultTowerClass;
+
+	virtual void Tick(float DeltaTime) override;
+
 	// 输入处理
 	void OnRightClick(const FInputActionValue& Value);
 	void OnCameraZoom(const FInputActionValue& Value);
 	void OnCameraRotate(const FInputActionValue& Value);
 	void OnFocusHero(const FInputActionValue& Value);
+	void OnLeftClick(const FInputActionValue& Value);
+	void OnCancel(const FInputActionValue& Value);
+	void OnBuildMode(const FInputActionValue& Value);
+
+	// 更新建造预览位置
+	void UpdateBuildPreview();
 
 private:
 	// 获取鼠标点击位置的世界坐标
@@ -73,4 +121,17 @@ private:
 	// 控制的英雄
 	UPROPERTY()
 	TObjectPtr<AValorisCharacterBase> ControlledHero;
+
+	//~ 建造状态
+
+	// 是否在建造模式
+	bool bInBuildMode = false;
+
+	// 当前选择的塔类型
+	UPROPERTY()
+	TSubclassOf<ATowerBase> CurrentTowerClass;
+
+	// 建造预览 Actor
+	UPROPERTY()
+	TObjectPtr<ABuildPreview> BuildPreviewActor;
 };

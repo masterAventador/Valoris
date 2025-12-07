@@ -10,6 +10,8 @@
 #include "../Character/HeroAIController.h"
 #include "../Character/AricHero.h"
 #include "../Enemy/EnemyBase.h"
+#include "../Tower/TowerBase.h"
+#include "../Building/BuildPreview.h"
 
 AValorisPlayerController::AValorisPlayerController()
 {
@@ -75,6 +77,24 @@ void AValorisPlayerController::SetupInputComponent()
 		if (FocusHeroAction)
 		{
 			EnhancedInputComponent->BindAction(FocusHeroAction, ETriggerEvent::Started, this, &AValorisPlayerController::OnFocusHero);
+		}
+
+		// 左键点击
+		if (LeftClickAction)
+		{
+			EnhancedInputComponent->BindAction(LeftClickAction, ETriggerEvent::Started, this, &AValorisPlayerController::OnLeftClick);
+		}
+
+		// 取消键
+		if (CancelAction)
+		{
+			EnhancedInputComponent->BindAction(CancelAction, ETriggerEvent::Started, this, &AValorisPlayerController::OnCancel);
+		}
+
+		// 建造模式键
+		if (BuildModeAction)
+		{
+			EnhancedInputComponent->BindAction(BuildModeAction, ETriggerEvent::Started, this, &AValorisPlayerController::OnBuildMode);
 		}
 	}
 }
@@ -174,4 +194,132 @@ AActor* AValorisPlayerController::GetActorUnderCursor() const
 		return HitResult.GetActor();
 	}
 	return nullptr;
+}
+
+void AValorisPlayerController::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	// 建造模式下更新预览位置
+	if (bInBuildMode)
+	{
+		UpdateBuildPreview();
+	}
+}
+
+void AValorisPlayerController::OnLeftClick(const FInputActionValue& Value)
+{
+	if (bInBuildMode)
+	{
+		ConfirmBuild();
+	}
+}
+
+void AValorisPlayerController::OnCancel(const FInputActionValue& Value)
+{
+	if (bInBuildMode)
+	{
+		ExitBuildMode();
+	}
+}
+
+void AValorisPlayerController::OnBuildMode(const FInputActionValue& Value)
+{
+	if (bInBuildMode)
+	{
+		// 已在建造模式，退出
+		ExitBuildMode();
+	}
+	else
+	{
+		// 进入建造模式
+		if (DefaultTowerClass)
+		{
+			EnterBuildMode(DefaultTowerClass);
+		}
+	}
+}
+
+void AValorisPlayerController::EnterBuildMode(TSubclassOf<ATowerBase> TowerClass)
+{
+	if (!TowerClass)
+	{
+		return;
+	}
+
+	CurrentTowerClass = TowerClass;
+	bInBuildMode = true;
+
+	// 创建建造预览
+	if (BuildPreviewClass)
+	{
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+		BuildPreviewActor = GetWorld()->SpawnActor<ABuildPreview>(BuildPreviewClass, FVector::ZeroVector, FRotator::ZeroRotator, SpawnParams);
+		if (BuildPreviewActor)
+		{
+			BuildPreviewActor->SetTowerClass(TowerClass);
+			BuildPreviewActor->SetPreviewVisible(true);
+		}
+	}
+}
+
+void AValorisPlayerController::ExitBuildMode()
+{
+	bInBuildMode = false;
+	CurrentTowerClass = nullptr;
+
+	// 销毁建造预览
+	if (BuildPreviewActor)
+	{
+		BuildPreviewActor->Destroy();
+		BuildPreviewActor = nullptr;
+	}
+}
+
+void AValorisPlayerController::ConfirmBuild()
+{
+	if (!bInBuildMode || !CurrentTowerClass || !BuildPreviewActor)
+	{
+		return;
+	}
+
+	// 检查是否可以建造
+	if (!BuildPreviewActor->CanBuildAtCurrentLocation())
+	{
+		return;
+	}
+
+	// TODO: 检查资源是否足够
+
+	// 生成塔
+	FVector TowerLocation = BuildPreviewActor->GetActorLocation();
+	FRotator TowerRotation = FRotator::ZeroRotator;
+
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+
+	ATowerBase* NewTower = GetWorld()->SpawnActor<ATowerBase>(CurrentTowerClass, TowerLocation, TowerRotation, SpawnParams);
+	if (NewTower)
+	{
+		// TODO: 扣除资源
+
+		// 退出建造模式
+		ExitBuildMode();
+	}
+}
+
+void AValorisPlayerController::UpdateBuildPreview()
+{
+	if (!BuildPreviewActor)
+	{
+		return;
+	}
+
+	FVector HitLocation;
+	if (GetMouseHitLocation(HitLocation))
+	{
+		BuildPreviewActor->UpdatePreviewLocation(HitLocation);
+	}
 }
