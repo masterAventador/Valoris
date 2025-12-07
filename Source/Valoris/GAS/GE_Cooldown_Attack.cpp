@@ -2,6 +2,7 @@
 
 #include "GE_Cooldown_Attack.h"
 #include "ValorisGameplayTags.h"
+#include "GameplayEffectComponents/TargetTagsGameplayEffectComponent.h"
 
 UGE_Cooldown_Attack::UGE_Cooldown_Attack()
 {
@@ -11,8 +12,15 @@ UGE_Cooldown_Attack::UGE_Cooldown_Attack()
 	FScalableFloat Duration;
 	Duration.Value = 1.0f;
 	DurationMagnitude = FGameplayEffectModifierMagnitude(Duration);
+}
 
-	// 冷却 Tag 需要在蓝图中配置：
-	// 打开蓝图 -> Components -> 添加 TargetTagsGameplayEffectComponent
-	// 设置 Add Tags -> Cooldown.Attack
+void UGE_Cooldown_Attack::PostCDOContruct()
+{
+	Super::PostCDOContruct();
+
+	// 添加冷却 Tag 组件
+	UTargetTagsGameplayEffectComponent& TargetTagsComponent = FindOrAddComponent<UTargetTagsGameplayEffectComponent>();
+	FInheritedTagContainer TagContainer;
+	TagContainer.AddTag(FValorisGameplayTags::Get().Cooldown_Attack);
+	TargetTagsComponent.SetAndApplyTargetTagChanges(TagContainer);
 }

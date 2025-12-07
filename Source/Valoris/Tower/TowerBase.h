@@ -36,6 +36,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Tower")
 	int32 GetBuildCost() const { return BuildCost; }
 
+	// 获取当前攻击目标
+	UFUNCTION(BlueprintCallable, Category = "Tower")
+	AEnemyBase* GetCurrentTarget() const { return CurrentTarget.Get(); }
+
 protected:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;

@@ -16,4 +16,6 @@ class VALORIS_API UGE_Cooldown_Attack : public UGameplayEffect
 
 public:
 	UGE_Cooldown_Attack();
+
+	virtual void PostCDOContruct() override;
 };

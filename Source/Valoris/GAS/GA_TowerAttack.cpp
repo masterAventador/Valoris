@@ -4,6 +4,7 @@
 #include "AbilitySystemComponent.h"
 #include "../Tower/TowerBase.h"
 #include "../Character/ValorisCharacterBase.h"
+#include "../Enemy/EnemyBase.h"
 #include "ValorisAttributeSet.h"
 #include "ValorisGameplayTags.h"
 #include "GE_Cooldown_Attack.h"
@@ -11,14 +12,7 @@
 
 UGA_TowerAttack::UGA_TowerAttack()
 {
-	// 设置事件触发
-	FAbilityTriggerData TriggerData;
-	TriggerData.TriggerTag = FValorisGameplayTags::Get().Event_Attack;
-	TriggerData.TriggerSource = EGameplayAbilityTriggerSource::GameplayEvent;
-	AbilityTriggers.Add(TriggerData);
-
-	// 设置冷却
-	CooldownGameplayEffectClass = UGE_Cooldown_Attack::StaticClass();
+	// 冷却 Tag（CooldownGameplayEffectClass 在蓝图中配置）
 	CooldownTags.AddTag(FValorisGameplayTags::Get().Cooldown_Attack);
 
 	// 设置伤害效果
@@ -34,13 +28,15 @@ void UGA_TowerAttack::ActivateAbility(const FGameplayAbilitySpecHandle Handle, c
 		return;
 	}
 
-	// 获取攻击目标（从 EventData 中传入）
-	AActor* TargetActor = nullptr;
-	if (TriggerEventData && TriggerEventData->Target)
+	// 从塔获取当前攻击目标
+	ATowerBase* Tower = Cast<ATowerBase>(GetAvatarActorFromActorInfo());
+	if (!Tower)
 	{
-		TargetActor = const_cast<AActor*>(TriggerEventData->Target.Get());
+		EndAbility(Handle, ActorInfo, ActivationInfo, true, false);
+		return;
 	}
 
+	AActor* TargetActor = Tower->GetCurrentTarget();
 	if (!TargetActor)
 	{
 		EndAbility(Handle, ActorInfo, ActivationInfo, true, false);

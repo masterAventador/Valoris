@@ -201,19 +201,14 @@ void ATowerBase::TryAttackTarget()
 		return;
 	}
 
-	// 直接激活攻击技能
-	FGameplayEventData EventData;
-	EventData.Instigator = this;
-	EventData.Target = Target;
+	// 缓存当前攻击目标，供技能使用
+	CurrentTarget = Target;
 
-	// 通过事件激活技能
-	AbilitySystemComponent->TriggerAbilityFromGameplayEvent(
-		AbilitySystemComponent->FindAbilitySpecFromClass(UGA_TowerAttack::StaticClass())->Handle,
-		AbilitySystemComponent->AbilityActorInfo.Get(),
-		FValorisGameplayTags::Get().Event_Attack,
-		&EventData,
-		*AbilitySystemComponent
-	);
+	// 激活第一个技能（攻击技能）
+	if (DefaultAbilities.Num() > 0 && DefaultAbilities[0])
+	{
+		AbilitySystemComponent->TryActivateAbilityByClass(DefaultAbilities[0]);
+	}
 
 	// Debug: 画一条线到目标
 	DrawDebugLine(
