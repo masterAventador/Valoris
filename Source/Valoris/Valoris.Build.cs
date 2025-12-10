@@ -18,7 +18,10 @@ public class Valoris : ModuleRules
 			"GameplayTags",
 			"GameplayTasks",
 			"AIModule",
-			"NavigationSystem"
+			"NavigationSystem",
+			"UMG",
+			"Slate",
+			"SlateCore"
 		});
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });

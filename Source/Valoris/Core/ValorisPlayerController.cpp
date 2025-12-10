@@ -14,6 +14,7 @@
 #include "../Tower/TowerBase.h"
 #include "../Building/BuildPreview.h"
 #include "../Economy/ResourceManager.h"
+#include "../UI/ValorisHUD.h"
 
 AValorisPlayerController::AValorisPlayerController()
 {
@@ -48,6 +49,16 @@ void AValorisPlayerController::BeginPlay()
 	if (FoundHero)
 	{
 		ControlledHero = Cast<AValorisCharacterBase>(FoundHero);
+	}
+
+	// 创建 HUD
+	if (HUDWidgetClass)
+	{
+		HUDWidget = CreateWidget<UValorisHUD>(this, HUDWidgetClass);
+		if (HUDWidget)
+		{
+			HUDWidget->AddToViewport();
+		}
 	}
 }
 

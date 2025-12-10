@@ -13,6 +13,7 @@ class AValorisSpectatorPawn;
 class AValorisCharacterBase;
 class ATowerBase;
 class ABuildPreview;
+class UValorisHUD;
 
 /**
  * 玩家控制器
@@ -97,6 +98,12 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Build")
 	TSubclassOf<ATowerBase> DefaultTowerClass;
 
+	//~ UI
+
+	// HUD Widget 类
+	UPROPERTY(EditDefaultsOnly, Category = "UI")
+	TSubclassOf<UValorisHUD> HUDWidgetClass;
+
 	virtual void Tick(float DeltaTime) override;
 
 	// 输入处理
@@ -134,4 +141,10 @@ private:
 	// 建造预览 Actor
 	UPROPERTY()
 	TObjectPtr<ABuildPreview> BuildPreviewActor;
+
+	//~ UI 状态
+
+	// HUD Widget 实例
+	UPROPERTY()
+	TObjectPtr<UValorisHUD> HUDWidget;
 };
