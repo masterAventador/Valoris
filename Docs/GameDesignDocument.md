@@ -274,8 +274,8 @@ InputAction → GameplayTag → ValorisInputComponent → ASC → GameplayAbilit
 - [x] 敌人波次生成
 - [x] 防御塔建造
 - [x] 防御塔攻击
-- [ ] 资源系统
-- [ ] 基础UI
+- [x] 资源系统
+- [x] 基础UI
 - [ ] 胜利/失败判定
 - [ ] 一个可玩关卡
 
@@ -367,5 +367,6 @@ Content/
 | 2025-12-02 | 30分钟 | 实现敌人沿 Spline 路径移动：EnemyPath Actor、EnemyBase Tick 移动逻辑 |
 | 2025-12-06 | 1小时 | 实现敌人波次生成：WaveData DataAsset、GameMode 波次管理逻辑、自动查找 EnemyPath |
 | 2025-12-08 | 2小时 | 实现防御塔建造和攻击：TowerBase 塔基类、BuildPreview 建造预览、GA_TowerAttack 塔攻击技能、塔自动索敌逻辑 |
+| 2025-12-11 | 1小时 | 实现资源系统和基础UI：ResourceManager 金币管理、敌人击杀奖励、建造消耗检查、ValorisHUD 显示金币和波次 |
 
-**累计开发时间**: 8.7小时 / 90小时
+**累计开发时间**: 9.7小时 / 90小时
