@@ -6,6 +6,7 @@
 #include "../Enemy/EnemyBase.h"
 #include "../Enemy/EnemyPath.h"
 #include "../Data/WaveData.h"
+#include "../Economy/ResourceManager.h"
 #include "Kismet/GameplayStatics.h"
 #include "TimerManager.h"
 
@@ -13,6 +14,9 @@ AValorisGameMode::AValorisGameMode()
 {
 	PlayerControllerClass = AValorisPlayerController::StaticClass();
 	DefaultPawnClass = AValorisSpectatorPawn::StaticClass();
+
+	// 创建资源管理器组件
+	ResourceManager = CreateDefaultSubobject<UResourceManager>(TEXT("ResourceManager"));
 }
 
 void AValorisGameMode::BeginPlay()
@@ -197,5 +201,15 @@ void AValorisGameMode::CheckWaveCompletion()
 void AValorisGameMode::OnEnemyDestroyed(AActor* DestroyedActor)
 {
 	AliveEnemyCount = FMath::Max(0, AliveEnemyCount - 1);
+
+	// 如果敌人是被击杀的，给予金币奖励
+	if (AEnemyBase* Enemy = Cast<AEnemyBase>(DestroyedActor))
+	{
+		if (Enemy->WasKilled() && ResourceManager)
+		{
+			ResourceManager->AddGold(Enemy->GetGoldReward());
+		}
+	}
+
 	CheckWaveCompletion();
 }

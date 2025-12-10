@@ -9,6 +9,7 @@
 class UWaveData;
 class AEnemyBase;
 class AEnemyPath;
+class UResourceManager;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnWaveStarted, int32, WaveIndex);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnWaveCompleted, int32, WaveIndex);
@@ -25,6 +26,12 @@ class VALORIS_API AValorisGameMode : public AGameModeBase
 
 public:
 	AValorisGameMode();
+
+	//~ 资源管理
+
+	// 获取资源管理器
+	UFUNCTION(BlueprintCallable, Category = "Resource")
+	UResourceManager* GetResourceManager() const { return ResourceManager; }
 
 	//~ 波次管理
 
@@ -114,4 +121,10 @@ protected:
 
 	// 波次间隔定时器
 	FTimerHandle WaveDelayTimerHandle;
+
+	//~ 资源
+
+	// 资源管理器组件
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Resource")
+	TObjectPtr<UResourceManager> ResourceManager;
 };

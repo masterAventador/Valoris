@@ -3,6 +3,7 @@
 #include "ValorisAttributeSet.h"
 #include "GameplayEffectExtension.h"
 #include "Net/UnrealNetwork.h"
+#include "../Enemy/EnemyBase.h"
 
 UValorisAttributeSet::UValorisAttributeSet()
 {
@@ -54,10 +55,22 @@ void UValorisAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCal
 			const float NewHealth = GetHealth() - ActualDamage;
 			SetHealth(FMath::Clamp(NewHealth, 0.f, GetMaxHealth()));
 
-			// TODO: 如果血量为0，触发死亡
+			// 如果血量为0，触发死亡
 			if (GetHealth() <= 0.f)
 			{
-				// 广播死亡事件
+				// 获取角色 Actor
+				AActor* OwnerActor = nullptr;
+				if (UAbilitySystemComponent* ASC = GetOwningAbilitySystemComponent())
+				{
+					OwnerActor = ASC->GetAvatarActor();
+				}
+
+				// 如果是敌人，标记为被击杀并销毁
+				if (AEnemyBase* Enemy = Cast<AEnemyBase>(OwnerActor))
+				{
+					Enemy->MarkAsKilled();
+					Enemy->Destroy();
+				}
 			}
 		}
 	}

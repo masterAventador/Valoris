@@ -1,6 +1,7 @@
 // Copyright Valoris. All Rights Reserved.
 
 #include "ValorisPlayerController.h"
+#include "ValorisGameMode.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
@@ -12,6 +13,7 @@
 #include "../Enemy/EnemyBase.h"
 #include "../Tower/TowerBase.h"
 #include "../Building/BuildPreview.h"
+#include "../Economy/ResourceManager.h"
 
 AValorisPlayerController::AValorisPlayerController()
 {
@@ -291,7 +293,22 @@ void AValorisPlayerController::ConfirmBuild()
 		return;
 	}
 
-	// TODO: 检查资源是否足够
+	// 获取塔的建造花费
+	const ATowerBase* TowerCDO = CurrentTowerClass->GetDefaultObject<ATowerBase>();
+	const int32 BuildCost = TowerCDO ? TowerCDO->GetBuildCost() : 0;
+
+	// 获取资源管理器
+	UResourceManager* ResourceManager = nullptr;
+	if (AValorisGameMode* GameMode = Cast<AValorisGameMode>(GetWorld()->GetAuthGameMode()))
+	{
+		ResourceManager = GameMode->GetResourceManager();
+	}
+
+	// 检查资源是否足够
+	if (!ResourceManager || !ResourceManager->HasEnoughGold(BuildCost))
+	{
+		return;
+	}
 
 	// 生成塔
 	FVector TowerLocation = BuildPreviewActor->GetActorLocation();
@@ -303,7 +320,8 @@ void AValorisPlayerController::ConfirmBuild()
 	ATowerBase* NewTower = GetWorld()->SpawnActor<ATowerBase>(CurrentTowerClass, TowerLocation, TowerRotation, SpawnParams);
 	if (NewTower)
 	{
-		// TODO: 扣除资源
+		// 扣除资源
+		ResourceManager->SpendGold(BuildCost);
 
 		// 退出建造模式
 		ExitBuildMode();

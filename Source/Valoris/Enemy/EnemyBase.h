@@ -42,6 +42,14 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Enemy")
 	int32 GetGoldReward() const { return GoldReward; }
 
+	// 是否被击杀（用于区分击杀和到达终点）
+	UFUNCTION(BlueprintCallable, Category = "Enemy")
+	bool WasKilled() const { return bWasKilled; }
+
+	// 标记为被击杀
+	UFUNCTION(BlueprintCallable, Category = "Enemy")
+	void MarkAsKilled() { bWasKilled = true; }
+
 protected:
 	virtual void BeginPlay() override;
 
@@ -65,4 +73,7 @@ protected:
 	// 击杀奖励金币
 	UPROPERTY(EditDefaultsOnly, Category = "Enemy")
 	int32 GoldReward = 10;
+
+	// 是否被击杀（区分死亡原因）
+	bool bWasKilled = false;
 };
