@@ -5,6 +5,7 @@
 #include "EnemyPath.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "../GAS/ValorisAttributeSet.h"
+#include "../Core/ValorisGameMode.h"
 
 AEnemyBase::AEnemyBase()
 {
@@ -78,7 +79,12 @@ void AEnemyBase::SetPath(AEnemyPath* InPath)
 
 void AEnemyBase::OnReachedEnd_Implementation()
 {
-	// TODO: 对基地造成伤害
-	// 目前先直接销毁
+	// 对基地造成伤害
+	if (AValorisGameMode* GameMode = Cast<AValorisGameMode>(GetWorld()->GetAuthGameMode()))
+	{
+		GameMode->DamageBase(BaseDamage);
+	}
+
+	// 销毁敌人（不标记为击杀，不给奖励）
 	Destroy();
 }

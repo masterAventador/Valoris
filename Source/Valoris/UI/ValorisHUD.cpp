@@ -34,8 +34,23 @@ void UValorisHUD::InitializeHUD()
 	GameMode->OnWaveStarted.AddDynamic(this, &UValorisHUD::OnWaveStarted);
 	GameMode->OnAllWavesCompleted.AddDynamic(this, &UValorisHUD::OnAllWavesCompleted);
 
+	// 绑定基地生命值事件
+	GameMode->OnBaseHealthChanged.AddDynamic(this, &UValorisHUD::OnBaseHealthChanged);
+
+	// 绑定游戏结束事件
+	GameMode->OnGameOver.AddDynamic(this, &UValorisHUD::OnGameOver);
+
 	// 初始化波次显示
 	UpdateWaveDisplay(GameMode->GetCurrentWaveIndex() + 1, GameMode->GetTotalWaves());
+
+	// 初始化基地生命值显示
+	UpdateBaseHealthDisplay(GameMode->GetBaseHealth(), GameMode->GetBaseMaxHealth());
+
+	// 隐藏游戏结果文本
+	if (GameResultText)
+	{
+		GameResultText->SetVisibility(ESlateVisibility::Hidden);
+	}
 }
 
 void UValorisHUD::UpdateGoldDisplay(int32 NewGold)
@@ -75,4 +90,31 @@ void UValorisHUD::OnAllWavesCompleted()
 	{
 		WaveText->SetText(FText::FromString(TEXT("Complete!")));
 	}
+}
+
+void UValorisHUD::UpdateBaseHealthDisplay(float CurrentHealth, float MaxHealth)
+{
+	if (BaseHealthText)
+	{
+		BaseHealthText->SetText(FText::FromString(FString::Printf(TEXT("%.0f / %.0f"), CurrentHealth, MaxHealth)));
+	}
+}
+
+void UValorisHUD::ShowGameResult(bool bVictory)
+{
+	if (GameResultText)
+	{
+		GameResultText->SetText(FText::FromString(bVictory ? TEXT("VICTORY!") : TEXT("DEFEAT!")));
+		GameResultText->SetVisibility(ESlateVisibility::Visible);
+	}
+}
+
+void UValorisHUD::OnBaseHealthChanged(float NewHealth, float MaxHealth)
+{
+	UpdateBaseHealthDisplay(NewHealth, MaxHealth);
+}
+
+void UValorisHUD::OnGameOver(bool bVictory)
+{
+	ShowGameResult(bVictory);
 }

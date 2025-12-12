@@ -14,6 +14,8 @@ class UResourceManager;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnWaveStarted, int32, WaveIndex);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnWaveCompleted, int32, WaveIndex);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnAllWavesCompleted);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnBaseHealthChanged, float, NewHealth, float, MaxHealth);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnGameOver, bool, bVictory);
 
 /**
  * 游戏模式基类
@@ -68,6 +70,32 @@ public:
 	// 所有波次完成事件
 	UPROPERTY(BlueprintAssignable, Category = "Wave|Events")
 	FOnAllWavesCompleted OnAllWavesCompleted;
+
+	//~ 基地系统
+
+	// 获取基地当前生命值
+	UFUNCTION(BlueprintCallable, Category = "Base")
+	float GetBaseHealth() const { return BaseHealth; }
+
+	// 获取基地最大生命值
+	UFUNCTION(BlueprintCallable, Category = "Base")
+	float GetBaseMaxHealth() const { return BaseMaxHealth; }
+
+	// 对基地造成伤害
+	UFUNCTION(BlueprintCallable, Category = "Base")
+	void DamageBase(float Damage);
+
+	// 基地生命值变化事件
+	UPROPERTY(BlueprintAssignable, Category = "Base|Events")
+	FOnBaseHealthChanged OnBaseHealthChanged;
+
+	// 游戏结束事件（胜利/失败）
+	UPROPERTY(BlueprintAssignable, Category = "Game|Events")
+	FOnGameOver OnGameOver;
+
+	// 游戏是否已结束
+	UFUNCTION(BlueprintCallable, Category = "Game")
+	bool IsGameOver() const { return bGameOver; }
 
 protected:
 	virtual void BeginPlay() override;
@@ -127,4 +155,17 @@ protected:
 	// 资源管理器组件
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Resource")
 	TObjectPtr<UResourceManager> ResourceManager;
+
+	//~ 基地
+
+	// 基地最大生命值
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Base|Config")
+	float BaseMaxHealth = 20.f;
+
+	// 基地当前生命值
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "Base|State")
+	float BaseHealth = 20.f;
+
+	// 游戏是否已结束
+	bool bGameOver = false;
 };

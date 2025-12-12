@@ -23,6 +23,9 @@ void AValorisGameMode::BeginPlay()
 {
 	Super::BeginPlay();
 
+	// 初始化基地生命值
+	BaseHealth = BaseMaxHealth;
+
 	// 如果没有配置 EnemyPath，尝试从场景中查找
 	if (!EnemyPath)
 	{
@@ -192,8 +195,15 @@ void AValorisGameMode::CheckWaveCompletion()
 		}
 		else
 		{
-			// 所有波次完成
+			// 所有波次完成 - 胜利
 			OnAllWavesCompleted.Broadcast();
+
+			if (!bGameOver)
+			{
+				bGameOver = true;
+				OnGameOver.Broadcast(true); // 胜利
+				UE_LOG(LogTemp, Warning, TEXT("Game Over - Victory!"));
+			}
 		}
 	}
 }
@@ -212,4 +222,30 @@ void AValorisGameMode::OnEnemyDestroyed(AActor* DestroyedActor)
 	}
 
 	CheckWaveCompletion();
+}
+
+void AValorisGameMode::DamageBase(float Damage)
+{
+	if (bGameOver || Damage <= 0.f)
+	{
+		return;
+	}
+
+	BaseHealth = FMath::Max(0.f, BaseHealth - Damage);
+	OnBaseHealthChanged.Broadcast(BaseHealth, BaseMaxHealth);
+
+	UE_LOG(LogTemp, Log, TEXT("Base damaged: %.0f, Remaining: %.0f/%.0f"), Damage, BaseHealth, BaseMaxHealth);
+
+	// 检查是否失败
+	if (BaseHealth <= 0.f)
+	{
+		bGameOver = true;
+		OnGameOver.Broadcast(false); // 失败
+
+		// 停止波次生成
+		GetWorld()->GetTimerManager().ClearTimer(SpawnTimerHandle);
+		GetWorld()->GetTimerManager().ClearTimer(WaveDelayTimerHandle);
+
+		UE_LOG(LogTemp, Warning, TEXT("Game Over - Defeat!"));
+	}
 }
