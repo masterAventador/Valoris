@@ -177,6 +177,13 @@ void AValorisGameMode::CheckWaveCompletion()
 	// 波次完成条件：所有敌人已生成且全部被消灭
 	if (!bIsSpawning && AliveEnemyCount == 0)
 	{
+		// 给予波次完成奖励
+		const FWaveInfo& CompletedWave = WaveData->GetWaveInfo(CurrentWaveIndex);
+		if (ResourceManager && CompletedWave.GoldReward > 0)
+		{
+			ResourceManager->AddGold(CompletedWave.GoldReward);
+		}
+
 		// 广播波次完成事件
 		OnWaveCompleted.Broadcast(CurrentWaveIndex);
 
