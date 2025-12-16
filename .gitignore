@@ -48,8 +48,8 @@ Saved/
 *.ipa
 
 # Unreal Engine specific
-*.uasset
-*.umap
+# *.uasset  # 需要跟踪资源文件
+# *.umap    # 需要跟踪关卡文件
 *.upk
 *.udk
 
