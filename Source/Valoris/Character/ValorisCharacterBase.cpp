@@ -3,6 +3,7 @@
 #include "ValorisCharacterBase.h"
 #include "AbilitySystemComponent.h"
 #include "GameplayAbilitySpec.h"
+#include "Components/SkeletalMeshComponent.h"
 #include "../GAS/ValorisAttributeSet.h"
 
 AValorisCharacterBase::AValorisCharacterBase()
@@ -17,6 +18,10 @@ AValorisCharacterBase::AValorisCharacterBase()
 
 	// 创建属性集
 	AttributeSet = CreateDefaultSubobject<UValorisAttributeSet>(TEXT("AttributeSet"));
+
+	// 创建武器组件（暂不附加，BeginPlay 时检查插槽后附加）
+	WeaponRight = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("WeaponRight"));
+	WeaponLeft = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("WeaponLeft"));
 }
 
 UAbilitySystemComponent* AValorisCharacterBase::GetAbilitySystemComponent() const
@@ -29,6 +34,40 @@ void AValorisCharacterBase::BeginPlay()
 	Super::BeginPlay();
 
 	InitializeAbilitySystem();
+}
+
+void AValorisCharacterBase::OnConstruction(const FTransform& Transform)
+{
+	Super::OnConstruction(Transform);
+
+	AttachWeaponsToSockets();
+}
+
+void AValorisCharacterBase::AttachWeaponsToSockets()
+{
+	USkeletalMeshComponent* CharacterMesh = GetMesh();
+	if (!CharacterMesh)
+	{
+		return;
+	}
+
+	// 检查右手插槽并附加武器
+	if (WeaponRight && !RightHandSocketName.IsNone())
+	{
+		if (CharacterMesh->DoesSocketExist(RightHandSocketName))
+		{
+			WeaponRight->AttachToComponent(CharacterMesh, FAttachmentTransformRules::SnapToTargetNotIncludingScale, RightHandSocketName);
+		}
+	}
+
+	// 检查左手插槽并附加武器
+	if (WeaponLeft && !LeftHandSocketName.IsNone())
+	{
+		if (CharacterMesh->DoesSocketExist(LeftHandSocketName))
+		{
+			WeaponLeft->AttachToComponent(CharacterMesh, FAttachmentTransformRules::SnapToTargetNotIncludingScale, LeftHandSocketName);
+		}
+	}
 }
 
 void AValorisCharacterBase::InitializeAbilitySystem()

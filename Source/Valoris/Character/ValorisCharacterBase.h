@@ -11,6 +11,7 @@ class UAbilitySystemComponent;
 class UValorisAttributeSet;
 class UGameplayEffect;
 class UGameplayAbility;
+class USkeletalMeshComponent;
 
 /**
  * 角色基类
@@ -32,6 +33,7 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
+	virtual void OnConstruction(const FTransform& Transform) override;
 
 	// GAS 组件
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "GAS")
@@ -49,8 +51,27 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "GAS")
 	TArray<TSubclassOf<UGameplayAbility>> DefaultAbilities;
 
+	// 武器组件 - 右手
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
+	TObjectPtr<USkeletalMeshComponent> WeaponRight;
+
+	// 武器组件 - 左手
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
+	TObjectPtr<USkeletalMeshComponent> WeaponLeft;
+
+	// 右手武器插槽名称
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
+	FName RightHandSocketName = FName("weapon_r");
+
+	// 左手武器插槽名称
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
+	FName LeftHandSocketName = FName("weapon_l");
+
 	// 初始化 GAS
 	virtual void InitializeAbilitySystem();
+
+	// 初始化武器附加
+	void AttachWeaponsToSockets();
 
 	// 授予默认技能
 	void GiveDefaultAbilities();
