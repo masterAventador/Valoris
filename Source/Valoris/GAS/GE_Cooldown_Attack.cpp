@@ -21,6 +21,6 @@ void UGE_Cooldown_Attack::PostCDOContruct()
 	// 添加冷却 Tag 组件
 	UTargetTagsGameplayEffectComponent& TargetTagsComponent = FindOrAddComponent<UTargetTagsGameplayEffectComponent>();
 	FInheritedTagContainer TagContainer;
-	TagContainer.AddTag(FValorisGameplayTags::Get().Cooldown_Attack);
+	TagContainer.AddTag(FValorisGameplayTags::Cooldown_Attack);
 	TargetTagsComponent.SetAndApplyTargetTagChanges(TagContainer);
 }

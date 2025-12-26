@@ -113,7 +113,7 @@ void AHeroAIController::PerformAttack()
 		EventData.Target = AttackTarget;
 
 		// 触发攻击事件
-		ASC->HandleGameplayEvent(FValorisGameplayTags::Get().Event_Attack, &EventData);
+		ASC->HandleGameplayEvent(FValorisGameplayTags::Event_Attack, &EventData);
 	}
 }
 

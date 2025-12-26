@@ -374,7 +374,8 @@ Content/
 | 2025-12-22 | 1小时 | 动画系统架构：新增 HeroAnimInstance/EnemyAnimInstance C++ 动画基类（Speed、Direction、bIsMoving 等变量）、创建 ABP_HeroBase/ABP_EnemyBase 动画蓝图、Aric 动画重定向工作流探索 |
 | 2025-12-23 | 40分钟 | 实现英雄 Idle/Walk/Run 动画：在 ABP_HeroBase 创建 Locomotion 状态（Blend Space + Slot 系统）、创建 BS_IdleWalkRun Blend Space 1D、ABP_Aric 覆盖动画资产、仓库迁移至 GitHub |
 | 2025-12-25 | 45分钟 | 武器系统和动画优化：角色基类添加左右手武器组件、OnConstruction 自动附加武器到骨骼插槽、Blend Space 平滑过渡设置 |
+| 2025-12-26 | 1.5小时 | 攻击动画系统架构：GA_MontageAbilityBase Montage 技能基类（自动播放动画+监听事件）、AnimNotify_SendGameplayEvent 动画通知类、GameplayTags 重构为静态成员、const 一致性优化 |
 
-**累计开发时间**: 14小时 / 90小时
+**累计开发时间**: 15.5小时 / 90小时
 
 🎉 **MVP 完成！** P0 所有功能已实现。

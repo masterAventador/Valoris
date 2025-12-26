@@ -155,7 +155,7 @@ void ATowerBase::TryAttackTarget()
 	}
 
 	// 检查是否在攻击冷却中
-	if (AbilitySystemComponent->HasMatchingGameplayTag(FValorisGameplayTags::Get().Cooldown_Attack))
+	if (AbilitySystemComponent->HasMatchingGameplayTag(FValorisGameplayTags::Cooldown_Attack))
 	{
 		return;
 	}

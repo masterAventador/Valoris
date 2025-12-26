@@ -12,54 +12,45 @@ UGA_HeroAttack::UGA_HeroAttack()
 {
 	// 设置事件触发
 	FAbilityTriggerData TriggerData;
-	TriggerData.TriggerTag = FValorisGameplayTags::Get().Event_Attack;
+	TriggerData.TriggerTag = FValorisGameplayTags::Event_Attack;
 	TriggerData.TriggerSource = EGameplayAbilityTriggerSource::GameplayEvent;
 	AbilityTriggers.Add(TriggerData);
 
 	// 设置冷却
 	CooldownGameplayEffectClass = UGE_Cooldown_Attack::StaticClass();
-	CooldownTags.AddTag(FValorisGameplayTags::Get().Cooldown_Attack);
+	CooldownTags.AddTag(FValorisGameplayTags::Cooldown_Attack);
 
 	// 设置伤害效果
 	DamageEffect = UGE_Damage::StaticClass();
 }
 
-void UGA_HeroAttack::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
-	const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData)
+void UGA_HeroAttack::OnEventReceived(FGameplayEventData Payload)
 {
-	if (!CommitAbility(Handle, ActorInfo, ActivationInfo))
+	// 只处理攻击命中事件
+	if (!Payload.EventTag.MatchesTag(FValorisGameplayTags::Event_Attack_Hit))
 	{
-		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
 		return;
 	}
 
-	// 获取攻击目标（从 EventData 中传入）
-	AActor* TargetActor = nullptr;
-	if (TriggerEventData && TriggerEventData->Target)
-	{
-		TargetActor = const_cast<AActor*>(TriggerEventData->Target.Get());
-	}
-
+	const AActor* TargetActor = GetCachedTarget();
 	if (!TargetActor)
 	{
-		EndAbility(Handle, ActorInfo, ActivationInfo, true, false);
 		return;
 	}
 
 	// 获取目标的 ASC
 	UAbilitySystemComponent* TargetASC = nullptr;
-	if (AValorisCharacterBase* TargetCharacter = Cast<AValorisCharacterBase>(TargetActor))
+	if (const AValorisCharacterBase* TargetCharacter = Cast<AValorisCharacterBase>(TargetActor))
 	{
 		TargetASC = TargetCharacter->GetAbilitySystemComponent();
 	}
 
 	if (!TargetASC)
 	{
-		EndAbility(Handle, ActorInfo, ActivationInfo, true, false);
 		return;
 	}
 
-	// 应用伤害效果（伤害值由 MMC_Damage 自动计算）
+	// 应用伤害效果
 	if (DamageEffect)
 	{
 		FGameplayEffectSpecHandle SpecHandle = MakeOutgoingGameplayEffectSpec(DamageEffect, GetAbilityLevel());
@@ -68,8 +59,6 @@ void UGA_HeroAttack::ActivateAbility(const FGameplayAbilitySpecHandle Handle, co
 			TargetASC->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data.Get());
 		}
 	}
-
-	EndAbility(Handle, ActorInfo, ActivationInfo, true, false);
 }
 
 const FGameplayTagContainer* UGA_HeroAttack::GetCooldownTags() const

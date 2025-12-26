@@ -13,7 +13,7 @@
 UGA_TowerAttack::UGA_TowerAttack()
 {
 	// 冷却 Tag（CooldownGameplayEffectClass 在蓝图中配置）
-	CooldownTags.AddTag(FValorisGameplayTags::Get().Cooldown_Attack);
+	CooldownTags.AddTag(FValorisGameplayTags::Cooldown_Attack);
 
 	// 设置伤害效果
 	DamageEffect = UGE_Damage::StaticClass();
