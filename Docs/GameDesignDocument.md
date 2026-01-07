@@ -375,7 +375,8 @@ Content/
 | 2025-12-23 | 40分钟 | 实现英雄 Idle/Walk/Run 动画：在 ABP_HeroBase 创建 Locomotion 状态（Blend Space + Slot 系统）、创建 BS_IdleWalkRun Blend Space 1D、ABP_Aric 覆盖动画资产、仓库迁移至 GitHub |
 | 2025-12-25 | 45分钟 | 武器系统和动画优化：角色基类添加左右手武器组件、OnConstruction 自动附加武器到骨骼插槽、Blend Space 平滑过渡设置 |
 | 2025-12-26 | 1.5小时 | 攻击动画系统架构：GA_MontageAbilityBase Montage 技能基类（自动播放动画+监听事件）、AnimNotify_SendGameplayEvent 动画通知类、GameplayTags 重构为静态成员、const 一致性优化 |
+| 2026-01-07 | 1.5小时 | 动画重定向研究：修复 DDC 缓存无法写入问题、研究飞剑动画实现原理（无权重真实骨骼 vs UE Virtual Bone）、在 Skeletal Mesh 中添加辅助骨骼、找到 UE 5.7 Translation Mode 设置位置（Op Stack → Retarget FK Chains） |
 
-**累计开发时间**: 15.5小时 / 90小时
+**累计开发时间**: 17小时 / 90小时
 
 🎉 **MVP 完成！** P0 所有功能已实现。
