@@ -377,7 +377,8 @@ Content/
 | 2025-12-26 | 1.5小时 | 攻击动画系统架构：GA_MontageAbilityBase Montage 技能基类（自动播放动画+监听事件）、AnimNotify_SendGameplayEvent 动画通知类、GameplayTags 重构为静态成员、const 一致性优化 |
 | 2026-01-07 | 1.5小时 | 动画重定向研究：修复 DDC 缓存无法写入问题、研究飞剑动画实现原理（无权重真实骨骼 vs UE Virtual Bone）、在 Skeletal Mesh 中添加辅助骨骼、找到 UE 5.7 Translation Mode 设置位置（Op Stack → Retarget FK Chains） |
 | 2026-01-08 | 1小时20分钟 | 完成 Sword and Shield 动画重定向：添加 Sword/Shield Holder 骨骼链、配置 IK Chain 重定向设置（Translation Mode: Absolute, Rotation Mode: One to One）、批量重定向全部动画到 Aric 角色 |
+| 2026-01-10 | 1小时 | 修复动画重定向 Root Motion 问题：重新配置 IK Rig 的 Root/Pelvis 设置、批量设置动画 Force Root Lock 锁定根骨骼位移、整理 Aric Sword and Shield 动画目录结构（按类型分类到 Idle/Attack/Walk/Run/Jump/Dodge/Roll/Hit/Turn） |
 
-**累计开发时间**: 18.5小时 / 90小时
+**累计开发时间**: 19.5小时 / 90小时
 
 🎉 **MVP 完成！** P0 所有功能已实现。
