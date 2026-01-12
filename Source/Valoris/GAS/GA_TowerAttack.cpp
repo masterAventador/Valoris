@@ -7,13 +7,15 @@
 #include "../Enemy/EnemyBase.h"
 #include "ValorisAttributeSet.h"
 #include "ValorisGameplayTags.h"
-#include "GE_Cooldown_Attack.h"
+#include "Effects/GE_Cooldown.h"
 #include "GE_Damage.h"
 
 UGA_TowerAttack::UGA_TowerAttack()
 {
-	// 冷却 Tag（CooldownGameplayEffectClass 在蓝图中配置）
-	CooldownTags.AddTag(FValorisGameplayTags::Cooldown_Attack);
+	// 设置技能标签（用于冷却标识）
+	FGameplayTagContainer Tags;
+	Tags.AddTag(FValorisGameplayTags::Ability_Ranged_Single_Tower_Attack);
+	SetAssetTags(Tags);
 
 	// 设置伤害效果
 	DamageEffect = UGE_Damage::StaticClass();
@@ -71,17 +73,14 @@ void UGA_TowerAttack::ActivateAbility(const FGameplayAbilitySpecHandle Handle, c
 
 const FGameplayTagContainer* UGA_TowerAttack::GetCooldownTags() const
 {
+	// 使用技能自身的 AbilityTags 作为冷却标识
+	CooldownTags = GetAssetTags();
 	return &CooldownTags;
 }
 
 void UGA_TowerAttack::ApplyCooldown(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
 	const FGameplayAbilityActivationInfo ActivationInfo) const
 {
-	if (!CooldownGameplayEffectClass)
-	{
-		return;
-	}
-
 	// 计算冷却时间（基于攻速）
 	float CooldownDuration = 1.0f;
 	if (ATowerBase* Tower = Cast<ATowerBase>(ActorInfo->AvatarActor.Get()))
@@ -93,11 +92,12 @@ void UGA_TowerAttack::ApplyCooldown(const FGameplayAbilitySpecHandle Handle, con
 		}
 	}
 
-	// 创建冷却效果
-	FGameplayEffectSpecHandle SpecHandle = MakeOutgoingGameplayEffectSpec(CooldownGameplayEffectClass, GetAbilityLevel());
+	// 创建冷却效果（使用通用 GE_Cooldown）
+	FGameplayEffectSpecHandle SpecHandle = MakeOutgoingGameplayEffectSpec(UGE_Cooldown::StaticClass(), GetAbilityLevel());
 	if (SpecHandle.IsValid())
 	{
-		SpecHandle.Data.Get()->SetDuration(CooldownDuration, true);
+		SpecHandle.Data->SetDuration(CooldownDuration, true);
+		SpecHandle.Data->DynamicGrantedTags.AppendTags(GetAssetTags());
 		ApplyGameplayEffectSpecToOwner(Handle, ActorInfo, ActivationInfo, SpecHandle);
 	}
 }

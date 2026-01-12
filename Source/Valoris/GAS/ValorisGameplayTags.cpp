@@ -9,8 +9,19 @@ FGameplayTag FValorisGameplayTags::Event_Attack_Hit;
 FGameplayTag FValorisGameplayTags::Data_Damage;
 FGameplayTag FValorisGameplayTags::State_Dead;
 FGameplayTag FValorisGameplayTags::State_Stunned;
+FGameplayTag FValorisGameplayTags::State_Buffed;
 FGameplayTag FValorisGameplayTags::Ability_Attack;
-FGameplayTag FValorisGameplayTags::Cooldown_Attack;
+// 近战单体
+FGameplayTag FValorisGameplayTags::Ability_Melee_Single_Aric_Attack;
+FGameplayTag FValorisGameplayTags::Ability_Melee_Single_Aric_ShieldBash;
+// 近战范围
+FGameplayTag FValorisGameplayTags::Ability_Melee_AOE_Aric_WhirlwindSlash;
+// 远程单体
+FGameplayTag FValorisGameplayTags::Ability_Ranged_Single_Tower_Attack;
+// 位移
+FGameplayTag FValorisGameplayTags::Ability_Movement_Aric_Charge;
+// 增益
+FGameplayTag FValorisGameplayTags::Ability_Buff_Aric_BattleCry;
 
 void FValorisGameplayTags::InitializeNativeTags()
 {
@@ -44,15 +55,52 @@ void FValorisGameplayTags::InitializeNativeTags()
 		FString("Character is stunned")
 	);
 
-	// 技能标签
+	State_Buffed = Manager.AddNativeGameplayTag(
+		FName("State.Buffed"),
+		FString("Character has active buff")
+	);
+
+	// 通用技能标签
 	Ability_Attack = Manager.AddNativeGameplayTag(
 		FName("Ability.Attack"),
 		FString("Basic attack ability")
 	);
 
-	// 冷却标签
-	Cooldown_Attack = Manager.AddNativeGameplayTag(
-		FName("Cooldown.Attack"),
-		FString("Attack ability cooldown")
+	// ========== 技能标签（按类型分类） ==========
+	// 格式: Ability.[类型].[角色].[技能名]
+
+	// --- 近战单体 (Melee.Single) ---
+	Ability_Melee_Single_Aric_Attack = Manager.AddNativeGameplayTag(
+		FName("Ability.Melee.Single.Aric.Attack"),
+		FString("Aric basic melee attack")
+	);
+
+	Ability_Melee_Single_Aric_ShieldBash = Manager.AddNativeGameplayTag(
+		FName("Ability.Melee.Single.Aric.ShieldBash"),
+		FString("Aric shield bash ability (Q) - melee single with stun")
+	);
+
+	// --- 近战范围 (Melee.AOE) ---
+	Ability_Melee_AOE_Aric_WhirlwindSlash = Manager.AddNativeGameplayTag(
+		FName("Ability.Melee.AOE.Aric.WhirlwindSlash"),
+		FString("Aric whirlwind slash ability (W) - melee AOE")
+	);
+
+	// --- 远程单体 (Ranged.Single) ---
+	Ability_Ranged_Single_Tower_Attack = Manager.AddNativeGameplayTag(
+		FName("Ability.Ranged.Single.Tower.Attack"),
+		FString("Tower ranged single target attack")
+	);
+
+	// --- 位移 (Movement) ---
+	Ability_Movement_Aric_Charge = Manager.AddNativeGameplayTag(
+		FName("Ability.Movement.Aric.Charge"),
+		FString("Aric charge ability (E) - movement with damage")
+	);
+
+	// --- 增益 (Buff) ---
+	Ability_Buff_Aric_BattleCry = Manager.AddNativeGameplayTag(
+		FName("Ability.Buff.Aric.BattleCry"),
+		FString("Aric battle cry ability (R) - self buff")
 	);
 }

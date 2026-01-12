@@ -32,7 +32,6 @@ protected:
 	TSubclassOf<UGameplayEffect> DamageEffect;
 
 private:
-	// 冷却 Tag 容器
-	UPROPERTY()
-	FGameplayTagContainer CooldownTags;
+	// 缓存的冷却 Tag 容器
+	mutable FGameplayTagContainer CooldownTags;
 };

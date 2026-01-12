@@ -154,8 +154,8 @@ void ATowerBase::TryAttackTarget()
 		return;
 	}
 
-	// 检查是否在攻击冷却中
-	if (AbilitySystemComponent->HasMatchingGameplayTag(FValorisGameplayTags::Cooldown_Attack))
+	// 检查是否在攻击冷却中（使用技能标签作为冷却标识）
+	if (AbilitySystemComponent->HasMatchingGameplayTag(FValorisGameplayTags::Ability_Ranged_Single_Tower_Attack))
 	{
 		return;
 	}

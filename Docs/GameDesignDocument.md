@@ -151,30 +151,64 @@ Source/Valoris/
 
 ### GameplayTags 分类
 
-- State.*：状态标签（Dead, Stunned, Silenced, Rooted, Invulnerable）
-- Ability.*：技能标签
-- Cooldown.*：冷却标签
-- Effect.*：效果标签（Damage, Heal, Buff, Debuff, Slow）
-- Input.*：输入标签（用于绑定技能）
-- Event.*：事件标签
+- State.*：状态标签（Dead, Stunned, Buffed）
+- Ability.[类型].[角色].[技能名]：技能标签（同时作为冷却标识）
+  - Ability.Melee.Single.*：近战单体
+  - Ability.Melee.AOE.*：近战范围
+  - Ability.Ranged.Single.*：远程单体
+  - Ability.Ranged.AOE.*：远程范围
+  - Ability.Movement.*：位移
+  - Ability.Buff.*：增益
+  - Ability.Control.*：控制
+- Data.*：数据标签（Data.Damage 用于 SetByCaller）
+- Event.*：事件标签（Event.Attack, Event.Attack.Hit）
+
+### 技能类架构
+
+```
+Source/Valoris/GAS/
+├── GA_MontageAbilityBase.h/cpp      # 技能基类（Montage + 冷却系统）
+├── Abilities/
+│   ├── Melee/
+│   │   ├── GA_MeleeAttack.h/cpp     # 近战单体（可附加控制效果）
+│   │   └── GA_MeleeAOE.h/cpp        # 近战范围
+│   ├── Movement/
+│   │   └── GA_Charge.h/cpp          # 冲锋位移
+│   └── Buff/
+│       └── GA_Buff.h/cpp            # 增益技能
+├── Effects/
+│   ├── GE_Damage.h/cpp              # 即时伤害
+│   ├── GE_Cooldown.h/cpp            # 通用冷却
+│   └── GE_Buff.h/cpp                # 增益效果
+└── Calculations/
+    └── ExecCalc_Damage.h/cpp        # 伤害计算
+```
 
 ### GameplayAbility
 
-| 技能 | 说明 |
-|------|------|
-| GA_HeroAttack | 英雄普通攻击 |
-| GA_HeroSkill_Q | Q技能（范围伤害） |
-| GA_HeroSkill_W | W技能（增益效果） |
-| GA_HeroSkill_E | E技能（位移/控制） |
-| GA_TowerAttack | 塔自动攻击 |
+| 技能基类 | 说明 | 可配置属性 |
+|---------|------|-----------|
+| GA_MontageAbilityBase | 基类 | Montage、CooldownDuration |
+| GA_MeleeAttack | 近战单体 | DamageMultiplier、AttackRange、ControlEffect |
+| GA_MeleeAOE | 近战范围 | AOERadius、MaxTargets |
+| GA_Charge | 冲锋位移 | ChargeDistance、ChargeSpeed、ImpactRadius |
+| GA_Buff | 增益 | BuffEffect、BuffDuration、bApplyToSelf |
+| GA_TowerAttack | 塔攻击 | DamageEffect |
+
+### 冷却系统设计
+
+- 使用技能的 AbilityTags 作为冷却标识（无需额外 Cooldown.* 标签）
+- GE_Cooldown 是纯 C++ 通用冷却效果
+- GA_MontageAbilityBase.ApplyCooldown() 动态设置时长和 GrantedTags
+- 冷却期间 ASC 上会有技能 Tag，通过 HasMatchingGameplayTag 检测
 
 ### GameplayEffect
 
 | 效果 | 类型 | 说明 |
 |------|------|------|
-| GE_Damage | Instant | 即时伤害 |
-| GE_Heal | Instant | 即时治疗 |
-| GE_Slow | Duration | 持续减速 |
+| GE_Damage | Instant | 即时伤害（SetByCaller） |
+| GE_Cooldown | Duration | 通用冷却（动态时长） |
+| GE_Buff | Duration | 增益效果基类 |
 
 ---
 
@@ -378,7 +412,9 @@ Content/
 | 2026-01-07 | 1.5小时 | 动画重定向研究：修复 DDC 缓存无法写入问题、研究飞剑动画实现原理（无权重真实骨骼 vs UE Virtual Bone）、在 Skeletal Mesh 中添加辅助骨骼、找到 UE 5.7 Translation Mode 设置位置（Op Stack → Retarget FK Chains） |
 | 2026-01-08 | 1小时20分钟 | 完成 Sword and Shield 动画重定向：添加 Sword/Shield Holder 骨骼链、配置 IK Chain 重定向设置（Translation Mode: Absolute, Rotation Mode: One to One）、批量重定向全部动画到 Aric 角色 |
 | 2026-01-10 | 1小时 | 修复动画重定向 Root Motion 问题：重新配置 IK Rig 的 Root/Pelvis 设置、批量设置动画 Force Root Lock 锁定根骨骼位移、整理 Aric Sword and Shield 动画目录结构（按类型分类到 Idle/Attack/Walk/Run/Jump/Dodge/Roll/Hit/Turn） |
+| 2026-01-11 | 40分钟 | 重构 Aric 动画蓝图：实现 Locomotion 状态机移动动画、删除旧 BlendSpace |
+| 2026-01-12 | 40分钟 | Aric 技能系统架构：创建技能类层次（GA_MeleeAttack/GA_MeleeAOE/GA_Charge/GA_Buff）、GE_Cooldown 通用冷却、GE_Buff 增益效果、GA_MontageAbilityBase 添加冷却系统、GameplayTags 改为按类型分类（Ability.Melee.Single/AOE、Ability.Movement、Ability.Buff）、修复 UE 5.7 API 变更（GetAssetTags、Algo::Sort、TargetTagsGameplayEffectComponent）、创建 AricAbilitySetupGuide.md 蓝图配置指南 |
 
-**累计开发时间**: 19.5小时 / 90小时
+**累计开发时间**: 20.8小时 / 90小时
 
 🎉 **MVP 完成！** P0 所有功能已实现。
