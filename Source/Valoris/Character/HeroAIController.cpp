@@ -63,11 +63,8 @@ void AHeroAIController::OnMoveCompleted(FAIRequestID RequestID, const FPathFollo
 
 	bIsChasing = false;
 
-	// 如果有攻击目标且不在范围内，继续追击
-	if (AttackTarget && IsValid(AttackTarget) && !IsInAttackRange())
-	{
-		ChaseTarget();
-	}
+	// 移动失败时不再尝试追击，避免递归
+	// 成功到达或被中断时，让 Tick 来决定是否继续追击
 }
 
 bool AHeroAIController::IsInAttackRange() const

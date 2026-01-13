@@ -414,7 +414,8 @@ Content/
 | 2026-01-10 | 1小时 | 修复动画重定向 Root Motion 问题：重新配置 IK Rig 的 Root/Pelvis 设置、批量设置动画 Force Root Lock 锁定根骨骼位移、整理 Aric Sword and Shield 动画目录结构（按类型分类到 Idle/Attack/Walk/Run/Jump/Dodge/Roll/Hit/Turn） |
 | 2026-01-11 | 40分钟 | 重构 Aric 动画蓝图：实现 Locomotion 状态机移动动画、删除旧 BlendSpace |
 | 2026-01-12 | 40分钟 | Aric 技能系统架构：创建技能类层次（GA_MeleeAttack/GA_MeleeAOE/GA_Charge/GA_Buff）、GE_Cooldown 通用冷却、GE_Buff 增益效果、GA_MontageAbilityBase 添加冷却系统、GameplayTags 改为按类型分类（Ability.Melee.Single/AOE、Ability.Movement、Ability.Buff）、修复 UE 5.7 API 变更（GetAssetTags、Algo::Sort、TargetTagsGameplayEffectComponent）、创建 AricAbilitySetupGuide.md 蓝图配置指南 |
+| 2026-01-14 | 1小时 | Bug 修复与伤害系统优化：修复 GE_Buff 构造函数崩溃（移除 FindOrAddComponent）、修复 HeroAIController 追击递归导致栈溢出、修复 ExecCalc_Damage 改为读取 SetByCaller 伤害值（让 DamageMultiplier 生效）、伤害公式改为 BaseDamage - Defense |
 
-**累计开发时间**: 20.8小时 / 90小时
+**累计开发时间**: 21.8小时 / 90小时
 
 🎉 **MVP 完成！** P0 所有功能已实现。

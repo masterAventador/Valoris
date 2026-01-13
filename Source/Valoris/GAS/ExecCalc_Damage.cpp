@@ -2,17 +2,18 @@
 
 #include "ExecCalc_Damage.h"
 #include "ValorisAttributeSet.h"
+#include "ValorisGameplayTags.h"
 #include "AbilitySystemComponent.h"
 
 // 声明要捕获的属性
 struct FDamageStatics
 {
-	DECLARE_ATTRIBUTE_CAPTUREDEF(AttackPower);
+	DECLARE_ATTRIBUTE_CAPTUREDEF(Defense);
 
 	FDamageStatics()
 	{
-		// 捕获攻击者的攻击力
-		DEFINE_ATTRIBUTE_CAPTUREDEF(UValorisAttributeSet, AttackPower, Source, true);
+		// 捕获目标的防御力
+		DEFINE_ATTRIBUTE_CAPTUREDEF(UValorisAttributeSet, Defense, Target, false);
 	}
 };
 
@@ -24,7 +25,7 @@ static const FDamageStatics& DamageStatics()
 
 UExecCalc_Damage::UExecCalc_Damage()
 {
-	RelevantAttributesToCapture.Add(DamageStatics().AttackPowerDef);
+	RelevantAttributesToCapture.Add(DamageStatics().DefenseDef);
 }
 
 void UExecCalc_Damage::Execute_Implementation(const FGameplayEffectCustomExecutionParameters& ExecutionParams,
@@ -36,12 +37,15 @@ void UExecCalc_Damage::Execute_Implementation(const FGameplayEffectCustomExecuti
 	EvaluateParams.SourceTags = Spec.CapturedSourceTags.GetAggregatedTags();
 	EvaluateParams.TargetTags = Spec.CapturedTargetTags.GetAggregatedTags();
 
-	// 获取攻击者的攻击力
-	float AttackPower = 0.f;
-	ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(DamageStatics().AttackPowerDef, EvaluateParams, AttackPower);
+	// 从 SetByCaller 获取基础伤害（已经在 GA 里算好了 AttackPower * DamageMultiplier）
+	float BaseDamage = Spec.GetSetByCallerMagnitude(FValorisGameplayTags::Data_Damage, false, 0.f);
 
-	// 计算最终伤害（后续可扩展：减去护甲、暴击等）
-	float FinalDamage = FMath::Max(0.f, AttackPower);
+	// 获取目标的防御力
+	float Defense = 0.f;
+	ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(DamageStatics().DefenseDef, EvaluateParams, Defense);
+
+	// 计算最终伤害：基础伤害 - 防御力（最低为1）
+	float FinalDamage = FMath::Max(1.f, BaseDamage - Defense);
 
 	// 输出到 IncomingDamage 属性
 	if (FinalDamage > 0.f)

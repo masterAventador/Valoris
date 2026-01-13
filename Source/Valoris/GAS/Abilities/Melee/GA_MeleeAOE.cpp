@@ -6,8 +6,6 @@
 #include "../../ValorisGameplayTags.h"
 #include "../../ValorisAttributeSet.h"
 #include "../../GE_Damage.h"
-#include "../../../Character/ValorisCharacterBase.h"
-#include "Kismet/KismetSystemLibrary.h"
 #include "Algo/Sort.h"
 
 UGA_MeleeAOE::UGA_MeleeAOE()

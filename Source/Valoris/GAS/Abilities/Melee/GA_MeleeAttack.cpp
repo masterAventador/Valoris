@@ -6,7 +6,6 @@
 #include "../../ValorisGameplayTags.h"
 #include "../../ValorisAttributeSet.h"
 #include "../../GE_Damage.h"
-#include "../../../Character/ValorisCharacterBase.h"
 
 UGA_MeleeAttack::UGA_MeleeAttack()
 {
