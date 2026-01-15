@@ -4,8 +4,10 @@
 #include "EnemyAIController.h"
 #include "EnemyPath.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Components/WidgetComponent.h"
 #include "../GAS/ValorisAttributeSet.h"
 #include "../Core/ValorisGameMode.h"
+#include "../UI/HealthBarWidget.h"
 
 AEnemyBase::AEnemyBase()
 {
@@ -15,11 +17,40 @@ AEnemyBase::AEnemyBase()
 
 	// 敌人需要 Tick 来沿路径移动
 	PrimaryActorTick.bCanEverTick = true;
+
+	// 创建血条组件
+	HealthBarComponent = CreateDefaultSubobject<UWidgetComponent>(TEXT("HealthBar"));
+	HealthBarComponent->SetupAttachment(RootComponent);
+	HealthBarComponent->SetWidgetSpace(EWidgetSpace::Screen);
+	HealthBarComponent->SetDrawAtDesiredSize(true);
 }
 
 void AEnemyBase::BeginPlay()
 {
 	Super::BeginPlay();
+
+	// 初始化血条
+	InitializeHealthBar();
+}
+
+void AEnemyBase::InitializeHealthBar()
+{
+	if (!HealthBarComponent || !HealthBarWidgetClass)
+	{
+		return;
+	}
+
+	// 设置血条位置
+	HealthBarComponent->SetRelativeLocation(FVector(0.f, 0.f, HealthBarHeight));
+
+	// 设置 Widget 类
+	HealthBarComponent->SetWidgetClass(HealthBarWidgetClass);
+
+	// 绑定到 ASC
+	if (UHealthBarWidget* HealthBarWidget = Cast<UHealthBarWidget>(HealthBarComponent->GetWidget()))
+	{
+		HealthBarWidget->BindToASC(AbilitySystemComponent);
+	}
 }
 
 void AEnemyBase::Tick(float DeltaTime)

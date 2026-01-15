@@ -7,6 +7,8 @@
 #include "EnemyBase.generated.h"
 
 class AEnemyPath;
+class UWidgetComponent;
+class UHealthBarWidget;
 
 /**
  * 敌人基类
@@ -76,4 +78,21 @@ protected:
 
 	// 是否被击杀（区分死亡原因）
 	bool bWasKilled = false;
+
+	// ========== 血条 ==========
+
+	// 血条 Widget 组件
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UI")
+	TObjectPtr<UWidgetComponent> HealthBarComponent;
+
+	// 血条 Widget 类（在蓝图中设置）
+	UPROPERTY(EditDefaultsOnly, Category = "UI")
+	TSubclassOf<UHealthBarWidget> HealthBarWidgetClass;
+
+	// 血条高度偏移
+	UPROPERTY(EditDefaultsOnly, Category = "UI")
+	float HealthBarHeight = 120.f;
+
+	// 初始化血条
+	void InitializeHealthBar();
 };
