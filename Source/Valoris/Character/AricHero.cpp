@@ -4,6 +4,8 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "EnhancedInputComponent.h"
+#include "InputActionValue.h"
 
 AAricHero::AAricHero()
 {
@@ -35,4 +37,30 @@ AAricHero::AAricHero()
 		Move->bOrientRotationToMovement = true;
 		Move->RotationRate = FRotator(0.f, 720.f, 0.f);
 	}
+}
+
+void AAricHero::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+{
+	Super::SetupPlayerInputComponent(PlayerInputComponent);
+
+	if (UEnhancedInputComponent* EIC = Cast<UEnhancedInputComponent>(PlayerInputComponent))
+	{
+		if (MoveAction)
+		{
+			EIC->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AAricHero::OnMoveInput);
+		}
+	}
+}
+
+void AAricHero::OnMoveInput(const FInputActionValue& Value)
+{
+	const FVector2D Axis = Value.Get<FVector2D>();
+	if (Axis.IsNearlyZero())
+	{
+		return;
+	}
+
+	// 顶下固定视角：相机 yaw 固定为 0，世界 X=前、Y=右
+	AddMovementInput(FVector::ForwardVector, Axis.Y);
+	AddMovementInput(FVector::RightVector, Axis.X);
 }

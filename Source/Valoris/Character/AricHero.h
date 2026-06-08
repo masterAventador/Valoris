@@ -19,6 +19,11 @@ public:
 	AAricHero();
 
 protected:
+	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+	// WASD 移动输入
+	void OnMoveInput(const struct FInputActionValue& Value);
+
 	// 顶下相机弹簧臂
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
 	TObjectPtr<class USpringArmComponent> CameraBoom;
@@ -26,4 +31,8 @@ protected:
 	// 顶下相机
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
 	TObjectPtr<class UCameraComponent> TopDownCamera;
+
+	// 移动 InputAction（编辑器里指向 IA_Move）
+	UPROPERTY(EditDefaultsOnly, Category = "Input")
+	TObjectPtr<class UInputAction> MoveAction;
 };

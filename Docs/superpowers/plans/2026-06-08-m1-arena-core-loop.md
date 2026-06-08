@@ -13,10 +13,13 @@
 - **分支：`arena-m1`**（已建，在此分支开发；不要在 master 上改）。
 - **T1 已完成并提交** ✅：`AricHero` 顶下相机(LoL 式斜俯视，CameraBoom 俯角 `-55°`/距离 `1100`，可调) + 禁用 AI possess；`ValorisGameMode` 默认 Pawn 改 `AAricHero`；编辑器侧建好 `BP_ArenaGameMode` + GameMode Override + PlayerStart，Play 验证通过（顶下视角、玩家 possess 骑士）。
 - **已知资产**：`BP_Aric` 路径 `/Game/Blueprints/Heroes/Aric/BP_Aric`，父类 `AricHero`（已确认）。
-- **下一步 = T2(WASD 移动)**：C++ 已写（`AricHero` 加 `SetupPlayerInputComponent` + `OnMoveInput` + `MoveAction`）。待用户编辑器步骤：① 新建 `IA_Move`(Axis2D) 并在 `DefaultMappingContext` 里绑 WASD ② 把 `BP_Aric` 的 `MoveAction` 指到 `IA_Move` ③ 编译 + Play 验证 WASD 能移动骑士。
-- 之后按顺序 T3(鼠标朝向) → T4(左键挥砍+前方球形扫描) → T5(敌人追玩家+简易生成 = M1 验收)。
+- **T2(WASD 移动) 已完成并验证通过** ✅：`AricHero` 加 `SetupPlayerInputComponent`+`OnMoveInput`+`MoveAction`；编辑器侧 `IMC_Valoris` 里加了 `IA_Move`(Axis2D) 绑 WASD（W=Swizzle YXZ、S=Swizzle+Negate、A=Negate、D=无）、`BP_Aric` 的 `MoveAction` 指 `IA_Move`。Play 验证 WASD 能驱动骑士。
+  - **踩坑记录（根因）**：T1 把 `PlayerControllerClass` 设成了 C++ 的 `ValorisPlayerController`，导致 `DefaultMappingContext` 为 null、`IMC_Valoris` 没加载、所有 Enhanced Input 失效（WASD 静默无反应）。修复：`BP_ArenaGameMode` 的 `PlayerControllerClass` 改用 **`BP_ValorisPlayerController`**（IMC 等资产引用设在 BP 上）。教训：UE 里资产引用走 BP/数据层，逻辑走 C++；`PlayerControllerClass`/`DefaultPawnClass` 一律指 BP 版。
+  - **Live Coding 注意**：新增 `UPROPERTY`/新增成员函数这类反射改动，Live Coding 编不进去（静默不生效）；必须关编辑器用 `Build.bat` 完整重编 + 重开编辑器。
+- **下一步 = T3(鼠标朝向)**：构造里 `bOrientRotationToMovement` 改回 `false`、开 Tick，Tick 里 `GetHitResultUnderCursor` 让骑士面向鼠标地面点（RInterpTo 平滑）。纯 C++，无新增编辑器资产，编译后直接 Play 验证。
+- 之后 T4(左键挥砍+前方球形扫描) → T5(敌人追玩家+简易生成 = M1 验收)。
+- **输入归属约定**：操控骑士的输入（Move/Attack/技能）放 `AricHero`；玩家层输入（UI/暂停/未来升级选择）放 PC。`IMC_Valoris` 是玩家级统一一份。PC 里旧 RTS 输入（右键指挥/相机缩放/建造）possess 骑士后失效，M1 暂留不清理，后续里程碑专门清。
 - **待用户提供**：竞技场关卡名/路径。
-- 注：PC 里旧的 RTS 相机/右键输入（`GetCameraPawn()` 取 SpectatorPawn）现在 possess 骑士后失效，M1 暂留不清理，后续里程碑再处理废弃输入。
 - **MCP**：暂不装（选了方案 B：先推进度，少摩擦），等 UE 5.8 官方 MCP 出来再评估（免费 `github.com/remiphilippe/mcp-unreal` 是社区备选，需 Go+插件重编+会话重启）。
 - 视角风格已确认：**英雄联盟那种斜俯视(顶下固定俯角)**，C++ 已实现，数值可微调。
 
@@ -118,7 +121,7 @@ DefaultPawnClass = AAricHero::StaticClass();
 并 `#include "../Character/AricHero.h"`。
 
 - [ ] **1.3 编辑器配置**
-  - 新建 `BP_ArenaGameMode`（父类 `ValorisGameMode`），`DefaultPawnClass = BP_Aric`（带网格+ABP+技能+属性的那个），`PlayerControllerClass = ValorisPlayerController`。
+  - 新建 `BP_ArenaGameMode`（父类 `ValorisGameMode`），`DefaultPawnClass = BP_Aric`（带网格+ABP+技能+属性的那个），`PlayerControllerClass = BP_ValorisPlayerController`（**必须用 BP 版，不是 C++ 的 `ValorisPlayerController`**——`DefaultMappingContext=IMC_Valoris` 等资产引用设在 BP 上，用 C++ 类会丢失 IMC 导致所有 Enhanced Input 失效）。
   - 竞技场关卡 World Settings → GameMode Override = `BP_ArenaGameMode`。
   - 关卡里放一个 `PlayerStart`。
   - 暂时移除场景中手动摆放的 `BP_Aric` 实例（避免和 GameMode 生成的玩家骑士重复）。
