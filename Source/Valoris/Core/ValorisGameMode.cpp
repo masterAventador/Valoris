@@ -3,6 +3,7 @@
 #include "ValorisGameMode.h"
 #include "ValorisPlayerController.h"
 #include "../Camera/ValorisSpectatorPawn.h"
+#include "../Character/AricHero.h"
 #include "../Enemy/EnemyBase.h"
 #include "../Enemy/EnemyPath.h"
 #include "../Data/WaveData.h"
@@ -13,7 +14,8 @@
 AValorisGameMode::AValorisGameMode()
 {
 	PlayerControllerClass = AValorisPlayerController::StaticClass();
-	DefaultPawnClass = AValorisSpectatorPawn::StaticClass();
+	// M1：玩家直接控制骑士（实际用带网格/技能的 BP_Aric，在 BP GameMode 里覆盖）
+	DefaultPawnClass = AAricHero::StaticClass();
 
 	// 创建资源管理器组件
 	ResourceManager = CreateDefaultSubobject<UResourceManager>(TEXT("ResourceManager"));

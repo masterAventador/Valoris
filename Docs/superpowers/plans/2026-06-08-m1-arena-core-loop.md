@@ -8,6 +8,20 @@
 
 **技术栈**：UE 5.7.4、C++、GAS、Enhanced Input、CharacterMovement。
 
+## 🔖 当前进度（接力点 / 2026-06-08）
+
+- **分支：`arena-m1`**（已建，在此分支开发；不要在 master 上改）。
+- **T1 已完成并提交** ✅：`AricHero` 顶下相机(LoL 式斜俯视，CameraBoom 俯角 `-55°`/距离 `1100`，可调) + 禁用 AI possess；`ValorisGameMode` 默认 Pawn 改 `AAricHero`；编辑器侧建好 `BP_ArenaGameMode` + GameMode Override + PlayerStart，Play 验证通过（顶下视角、玩家 possess 骑士）。
+- **已知资产**：`BP_Aric` 路径 `/Game/Blueprints/Heroes/Aric/BP_Aric`，父类 `AricHero`（已确认）。
+- **下一步 = T2(WASD 移动)**：C++ 已写（`AricHero` 加 `SetupPlayerInputComponent` + `OnMoveInput` + `MoveAction`）。待用户编辑器步骤：① 新建 `IA_Move`(Axis2D) 并在 `DefaultMappingContext` 里绑 WASD ② 把 `BP_Aric` 的 `MoveAction` 指到 `IA_Move` ③ 编译 + Play 验证 WASD 能移动骑士。
+- 之后按顺序 T3(鼠标朝向) → T4(左键挥砍+前方球形扫描) → T5(敌人追玩家+简易生成 = M1 验收)。
+- **待用户提供**：竞技场关卡名/路径。
+- 注：PC 里旧的 RTS 相机/右键输入（`GetCameraPawn()` 取 SpectatorPawn）现在 possess 骑士后失效，M1 暂留不清理，后续里程碑再处理废弃输入。
+- **MCP**：暂不装（选了方案 B：先推进度，少摩擦），等 UE 5.8 官方 MCP 出来再评估（免费 `github.com/remiphilippe/mcp-unreal` 是社区备选，需 Go+插件重编+会话重启）。
+- 视角风格已确认：**英雄联盟那种斜俯视(顶下固定俯角)**，C++ 已实现，数值可微调。
+
+---
+
 > 注：本计划只覆盖 M1。M2（波次环绕生成+胜负+重开）、M3（敌人反击+闪避）、M4（三选一升级）等后续里程碑各自单独排计划，先拿下 M1 的可见胜利。
 
 ---

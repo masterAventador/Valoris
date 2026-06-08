@@ -17,4 +17,13 @@ class VALORIS_API AAricHero : public AValorisCharacterBase
 
 public:
 	AAricHero();
+
+protected:
+	// 顶下相机弹簧臂
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
+	TObjectPtr<class USpringArmComponent> CameraBoom;
+
+	// 顶下相机
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
+	TObjectPtr<class UCameraComponent> TopDownCamera;
 };
