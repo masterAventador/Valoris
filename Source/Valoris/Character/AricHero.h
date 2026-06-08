@@ -19,10 +19,14 @@ public:
 	AAricHero();
 
 protected:
+	virtual void Tick(float DeltaTime) override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	// WASD 移动输入
 	void OnMoveInput(const struct FInputActionValue& Value);
+
+	// 左键攻击输入（激活 Aric 普攻技能）
+	void OnAttackInput();
 
 	// 顶下相机弹簧臂
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
@@ -35,4 +39,8 @@ protected:
 	// 移动 InputAction（编辑器里指向 IA_Move）
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
 	TObjectPtr<class UInputAction> MoveAction;
+
+	// 攻击 InputAction（编辑器里指向左键 IA_Attack）
+	UPROPERTY(EditDefaultsOnly, Category = "Input")
+	TObjectPtr<class UInputAction> AttackAction;
 };

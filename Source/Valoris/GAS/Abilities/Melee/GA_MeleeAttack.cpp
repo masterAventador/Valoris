@@ -6,6 +6,7 @@
 #include "../../ValorisGameplayTags.h"
 #include "../../ValorisAttributeSet.h"
 #include "../../GE_Damage.h"
+#include "Engine/World.h"
 
 UGA_MeleeAttack::UGA_MeleeAttack()
 {
@@ -21,16 +22,32 @@ void UGA_MeleeAttack::OnEventReceived(FGameplayEventData Payload)
 		return;
 	}
 
-	// 获取目标（优先使用事件中的目标，其次使用缓存的目标）
-	AActor* Target = const_cast<AActor*>(Payload.Target.Get());
-	if (!Target)
+	AActor* Avatar = GetAvatarActorFromActorInfo();
+	if (!Avatar)
 	{
-		Target = const_cast<AActor*>(GetCachedTarget());
+		return;
 	}
 
-	if (Target)
+	// 玩家挥砍没有预设目标：朝角色前方（= 鼠标朝向，见 AricHero::Tick）做球形扫描，
+	// 对范围内所有带 ASC 的目标逐个造成伤害
+	const FVector Origin = Avatar->GetActorLocation() + Avatar->GetActorForwardVector() * (AttackRange * 0.5f);
+	const FCollisionShape Sphere = FCollisionShape::MakeSphere(AttackRange * 0.5f);
+	FCollisionQueryParams Params;
+	Params.AddIgnoredActor(Avatar);
+
+	TArray<FHitResult> Hits;
+	Avatar->GetWorld()->SweepMultiByChannel(Hits, Origin, Origin, FQuat::Identity, ECC_Pawn, Sphere, Params);
+
+	TSet<AActor*> Damaged;
+	for (const FHitResult& Hit : Hits)
 	{
-		ApplyDamageToTarget(Target);
+		AActor* Target = Hit.GetActor();
+		if (Target && !Damaged.Contains(Target)
+			&& UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(Target))
+		{
+			ApplyDamageToTarget(Target);
+			Damaged.Add(Target);
+		}
 	}
 }
 

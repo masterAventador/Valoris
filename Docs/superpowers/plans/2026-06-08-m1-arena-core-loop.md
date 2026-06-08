@@ -16,9 +16,15 @@
 - **T2(WASD 移动) 已完成并验证通过** ✅：`AricHero` 加 `SetupPlayerInputComponent`+`OnMoveInput`+`MoveAction`；编辑器侧 `IMC_Valoris` 里加了 `IA_Move`(Axis2D) 绑 WASD（W=Swizzle YXZ、S=Swizzle+Negate、A=Negate、D=无）、`BP_Aric` 的 `MoveAction` 指 `IA_Move`。Play 验证 WASD 能驱动骑士。
   - **踩坑记录（根因）**：T1 把 `PlayerControllerClass` 设成了 C++ 的 `ValorisPlayerController`，导致 `DefaultMappingContext` 为 null、`IMC_Valoris` 没加载、所有 Enhanced Input 失效（WASD 静默无反应）。修复：`BP_ArenaGameMode` 的 `PlayerControllerClass` 改用 **`BP_ValorisPlayerController`**（IMC 等资产引用设在 BP 上）。教训：UE 里资产引用走 BP/数据层，逻辑走 C++；`PlayerControllerClass`/`DefaultPawnClass` 一律指 BP 版。
   - **Live Coding 注意**：新增 `UPROPERTY`/新增成员函数这类反射改动，Live Coding 编不进去（静默不生效）；必须关编辑器用 `Build.bat` 完整重编 + 重开编辑器。
-- **下一步 = T3(鼠标朝向)**：构造里 `bOrientRotationToMovement` 改回 `false`、开 Tick，Tick 里 `GetHitResultUnderCursor` 让骑士面向鼠标地面点（RInterpTo 平滑）。纯 C++，无新增编辑器资产，编译后直接 Play 验证。
-- 之后 T4(左键挥砍+前方球形扫描) → T5(敌人追玩家+简易生成 = M1 验收)。
+- **T3(鼠标朝向) 已完成并验证通过** ✅：构造里 `bOrientRotationToMovement=false`、开 Tick，Tick 里 `GetHitResultUnderCursor` 让骑士平滑面向鼠标地面点（RInterpTo 15）。纯 C++。Play 验证：骑士始终面朝鼠标、移动与朝向解耦（边走边瞄）。
+- **T4(左键挥砍+前方球形扫描) C++ 已完成、编译通过，⚠️ 待 Play 验证（明天）**：
+  - `AricHero` 加左键 `AttackAction` → `OnAttackInput` 用 `TryActivateAbilitiesByTag(Ability.Melee.Single.Aric.Attack)` 激活普攻。
+  - `GA_MeleeAttack::OnEventReceived` 命中改为：收到 `Event.Attack.Hit` 时，朝 Avatar 前方(=鼠标朝向) `AttackRange*0.5` 处做半径 `AttackRange*0.5` 的 `SweepMultiByChannel(ECC_Pawn)` 球形扫描，对范围内每个带 ASC 的目标 `ApplyDamageToTarget`（去重）。
+  - **明天接力 = T4 编辑器步骤 + 验证**：① 左键 IA（有 `IA_Attack` 用现成，否则新建并在 `IMC_Valoris` 绑左键）② `BP_Aric` 的 `AttackAction` 指该 IA ③ 确认 `BP_Aric` 的 `DefaultAbilities` 含 Aric 普攻技能蓝图、其 AbilityTags 含 `Ability.Melee.Single.Aric.Attack`、攻击 Montage 有发 `Event.Attack.Hit` 的 AnimNotify ④ 重开编辑器 Play：左键播挥砍、朝敌人左键敌人掉血、多个敌人一刀全中。
+  - **T4 验证潜在坑**：左键有动画但敌人不掉血 → Montage 缺 `Event.Attack.Hit` AnimNotify，或敌人 capsule 不挡 `ECC_Pawn`（可加 `DrawDebugSphere` 可视化扫描范围定位）；左键无动画 → `AttackAction` 没指/普攻技能没在 `DefaultAbilities`/AbilityTags 对不上。
+- 之后 T5(敌人追玩家+简易生成 = M1 验收)。
 - **输入归属约定**：操控骑士的输入（Move/Attack/技能）放 `AricHero`；玩家层输入（UI/暂停/未来升级选择）放 PC。`IMC_Valoris` 是玩家级统一一份。PC 里旧 RTS 输入（右键指挥/相机缩放/建造）possess 骑士后失效，M1 暂留不清理，后续里程碑专门清。
+- **M1后待办（已知瑕疵）**：移动动画方向化——T3 朝向解耦后，侧/背身跑仍播向前跑动画。Aric 自带整套 8 方向动画（`Content/Animations/Heroes/Aric/Sword_and_shield/`，Run/Dodge/Hit 全是 `F_0/F_L_45/L_90/B_180` 等方向命名，还有多套连招/Execution/Block），**无需 retarget 官方**，M1 后用自家动画搭 Motion Matching 或 2D BlendSpace + AimOffset。详见 memory `arena-directional-locomotion`。
 - **待用户提供**：竞技场关卡名/路径。
 - **MCP**：暂不装（选了方案 B：先推进度，少摩擦），等 UE 5.8 官方 MCP 出来再评估（免费 `github.com/remiphilippe/mcp-unreal` 是社区备选，需 Go+插件重编+会话重启）。
 - 视角风格已确认：**英雄联盟那种斜俯视(顶下固定俯角)**，C++ 已实现，数值可微调。
