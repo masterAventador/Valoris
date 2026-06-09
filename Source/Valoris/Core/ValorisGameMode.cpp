@@ -28,15 +28,36 @@ void AValorisGameMode::BeginPlay()
 	// 初始化基地生命值
 	BaseHealth = BaseMaxHealth;
 
-	// 如果没有配置 EnemyPath，尝试从场景中查找
-	if (!EnemyPath)
+	// M1：延迟生成测试敌人（延迟确保玩家 Pawn 已 spawn/possess，否则取不到玩家位置）
+	// M2 接回正式波次系统时改回 StartWaves()
+	if (M1TestEnemyClass)
 	{
-		AActor* FoundPath = UGameplayStatics::GetActorOfClass(GetWorld(), AEnemyPath::StaticClass());
-		EnemyPath = Cast<AEnemyPath>(FoundPath);
+		GetWorld()->GetTimerManager().SetTimer(
+			SpawnTimerHandle, this, &AValorisGameMode::SpawnM1TestEnemies, 0.5f, false);
+	}
+}
+
+void AValorisGameMode::SpawnM1TestEnemies()
+{
+	if (!M1TestEnemyClass)
+	{
+		return;
 	}
 
-	// TODO: 后续改为 UI 触发，目前自动开始波次用于测试
-	StartWaves();
+	APawn* Player = UGameplayStatics::GetPlayerPawn(this, 0);
+	const FVector Center = Player ? Player->GetActorLocation() : FVector::ZeroVector;
+
+	// 在玩家四周等角度生成几个测试假人（M2 接回正式波次系统）
+	constexpr int32 EnemyCount = 5;
+	for (int32 i = 0; i < EnemyCount; ++i)
+	{
+		const float AngleDeg = i * (360.f / EnemyCount);
+		const FVector SpawnPos = Center + FRotator(0.f, AngleDeg, 0.f).Vector() * 800.f + FVector(0.f, 0.f, 100.f);
+
+		FActorSpawnParameters Params;
+		Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+		GetWorld()->SpawnActor<AEnemyBase>(M1TestEnemyClass, SpawnPos, FRotator::ZeroRotator, Params);
+	}
 }
 
 void AValorisGameMode::StartWaves()

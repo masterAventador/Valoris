@@ -71,7 +71,10 @@ void UGA_MontageAbilityBase::ActivateAbility(const FGameplayAbilitySpecHandle Ha
 	FGameplayTag EventParentTag = FGameplayTag::RequestGameplayTag(FName("Event"));
 	UAbilityTask_WaitGameplayEvent* WaitEventTask = UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(
 		this,
-		EventParentTag
+		EventParentTag,
+		nullptr,   // OptionalExternalTarget：用技能自身 ASC
+		false,     // OnlyTriggerOnce：一次激活内允许多次命中事件
+		false      // OnlyMatchExact：false = 监听 Event 及其所有子 tag（Event.Attack.Hit 等）；默认 true 只精确匹配 "Event"，收不到子 tag
 	);
 	WaitEventTask->EventReceived.AddDynamic(this, &UGA_MontageAbilityBase::OnEventReceived);
 	WaitEventTask->ReadyForActivation();

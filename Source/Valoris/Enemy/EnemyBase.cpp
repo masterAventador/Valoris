@@ -8,6 +8,7 @@
 #include "../GAS/ValorisAttributeSet.h"
 #include "../Core/ValorisGameMode.h"
 #include "../UI/HealthBarWidget.h"
+#include "Kismet/GameplayStatics.h"
 
 AEnemyBase::AEnemyBase()
 {
@@ -57,38 +58,25 @@ void AEnemyBase::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	// 如果没有路径，不移动
-	if (!CurrentPath)
+	// M1：朝玩家移动（平地竞技场，不依赖 NavMesh，直接 AddMovementInput）
+	// M2 接回沿 Spline/正式波次时再按需切换
+	APawn* Player = UGameplayStatics::GetPlayerPawn(this, 0);
+	if (!Player)
 	{
 		return;
 	}
 
-	// 获取移动速度
-	float MoveSpeed = 300.f; // 默认速度
-	if (AttributeSet)
+	FVector ToPlayer = Player->GetActorLocation() - GetActorLocation();
+	ToPlayer.Z = 0.f;
+	const float Distance = ToPlayer.Size();
+
+	// 离玩家还远就继续靠近（120 以内算贴身，M1 只贴着不攻击）
+	if (Distance > 120.f)
 	{
-		MoveSpeed = AttributeSet->GetMoveSpeed();
+		const FVector Dir = ToPlayer.GetSafeNormal();
+		AddMovementInput(Dir, 1.f);
+		SetActorRotation(FRotator(0.f, Dir.Rotation().Yaw, 0.f));
 	}
-
-	// 更新路径上的距离
-	CurrentDistance += MoveSpeed * DeltaTime;
-
-	// 检查是否到达终点
-	float PathLength = CurrentPath->GetPathLength();
-	if (CurrentDistance >= PathLength)
-	{
-		OnReachedEnd();
-		return;
-	}
-
-	// 获取当前位置和旋转
-	FVector NewLocation = CurrentPath->GetLocationAtDistance(CurrentDistance);
-	FRotator NewRotation = CurrentPath->GetRotationAtDistance(CurrentDistance);
-
-	// 设置位置（保持 Z 轴不变，使用地面高度）
-	NewLocation.Z = GetActorLocation().Z;
-	SetActorLocation(NewLocation);
-	SetActorRotation(NewRotation);
 }
 
 void AEnemyBase::SetPath(AEnemyPath* InPath)
