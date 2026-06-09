@@ -108,6 +108,9 @@ protected:
 	// 生成下一个敌人（定时器回调）
 	void SpawnNextEnemy();
 
+	// M1：在玩家四周生成测试敌人（延迟定时器回调；M2 接回正式波次后废弃）
+	void SpawnM1TestEnemies();
+
 	// 检查当前波次是否完成
 	void CheckWaveCompletion();
 
@@ -124,6 +127,10 @@ protected:
 	// 敌人移动路径（在蓝图中配置，或运行时查找）
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Wave|Config")
 	TObjectPtr<AEnemyPath> EnemyPath;
+
+	// M1 测试敌人类型（在玩家四周生成；M2 接回正式波次后废弃）
+	UPROPERTY(EditDefaultsOnly, Category = "M1")
+	TSubclassOf<AEnemyBase> M1TestEnemyClass;
 
 	//~ 运行时状态
 

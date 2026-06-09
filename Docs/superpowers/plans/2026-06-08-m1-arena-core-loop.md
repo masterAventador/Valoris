@@ -8,6 +8,29 @@
 
 **技术栈**：UE 5.7.4、C++、GAS、Enhanced Input、CharacterMovement。
 
+## 🔖 当前进度（接力点 / 2026-06-08）
+
+- **分支：`arena-m1`**（已建，在此分支开发；不要在 master 上改）。
+- **T1 已完成并提交** ✅：`AricHero` 顶下相机(LoL 式斜俯视，CameraBoom 俯角 `-55°`/距离 `1100`，可调) + 禁用 AI possess；`ValorisGameMode` 默认 Pawn 改 `AAricHero`；编辑器侧建好 `BP_ArenaGameMode` + GameMode Override + PlayerStart，Play 验证通过（顶下视角、玩家 possess 骑士）。
+- **已知资产**：`BP_Aric` 路径 `/Game/Blueprints/Heroes/Aric/BP_Aric`，父类 `AricHero`（已确认）。
+- **T2(WASD 移动) 已完成并验证通过** ✅：`AricHero` 加 `SetupPlayerInputComponent`+`OnMoveInput`+`MoveAction`；编辑器侧 `IMC_Valoris` 里加了 `IA_Move`(Axis2D) 绑 WASD（W=Swizzle YXZ、S=Swizzle+Negate、A=Negate、D=无）、`BP_Aric` 的 `MoveAction` 指 `IA_Move`。Play 验证 WASD 能驱动骑士。
+  - **踩坑记录（根因）**：T1 把 `PlayerControllerClass` 设成了 C++ 的 `ValorisPlayerController`，导致 `DefaultMappingContext` 为 null、`IMC_Valoris` 没加载、所有 Enhanced Input 失效（WASD 静默无反应）。修复：`BP_ArenaGameMode` 的 `PlayerControllerClass` 改用 **`BP_ValorisPlayerController`**（IMC 等资产引用设在 BP 上）。教训：UE 里资产引用走 BP/数据层，逻辑走 C++；`PlayerControllerClass`/`DefaultPawnClass` 一律指 BP 版。
+  - **Live Coding 注意**：新增 `UPROPERTY`/新增成员函数这类反射改动，Live Coding 编不进去（静默不生效）；必须关编辑器用 `Build.bat` 完整重编 + 重开编辑器。
+- **T3(鼠标朝向) 已完成并验证通过** ✅：构造里 `bOrientRotationToMovement=false`、开 Tick，Tick 里 `GetHitResultUnderCursor` 让骑士平滑面向鼠标地面点（RInterpTo 15）。纯 C++。Play 验证：骑士始终面朝鼠标、移动与朝向解耦（边走边瞄）。
+- **T4(左键挥砍+前方球形扫描) 已完成并验证通过** ✅：`AricHero` 加左键 `AttackAction` → `OnAttackInput` 用 `TryActivateAbilitiesByTag(Ability.Melee.Single.Aric.Attack)` 激活普攻；`GA_MeleeAttack::OnEventReceived` 命中改为朝 Avatar 前方(=鼠标朝向)做 `SweepMultiByChannel(ECC_Pawn)` 球形扫描，对范围内带 ASC 目标逐个 `ApplyDamageToTarget`（去重）。编辑器侧配好左键 IA + `AttackAction`。Play 验证左键砍敌人掉血。
+  - **踩坑记录（根因，重要）**：左键有动画、技能也激活了，但敌人不掉血。根因在 `GA_MontageAbilityBase::ActivateAbility` 的 `WaitGameplayEvent(this, "Event")` —— `OnlyMatchExact` 参数**默认 true**，只精确匹配父 tag `"Event"`，收不到 montage AnimNotify 发的子 tag `Event.Attack.Hit` → `OnEventReceived` 永不触发。修复：显式传 `OnlyMatchExact=false`（监听 `Event` 及所有子 tag）。这是 GAS 经典坑（监听父 tag 必须关精确匹配）。**此修复在基类，惠及所有 montage 技能（盾击/旋风斩/冲锋/战吼等后续技能都依赖它）。**
+  - 注：`AnimationEditorPreviewActor` 的 `SendGameplayEventToActor: Invalid ASC` error 是在动画编辑器**预览 montage** 时的噪音（预览角色无 ASC），与游戏运行时无关，可忽略。
+- **T5(敌人追玩家+简易生成) 已完成并验证通过** ✅：`EnemyBase::Tick` 改为 `UGameplayStatics::GetPlayerPawn` + `AddMovementInput` 朝玩家移动（120 内贴身停）；`ValorisGameMode::BeginPlay` 不再 `StartWaves()`，改 0.5s 延迟 timer → `SpawnM1TestEnemies` 在玩家四周 800 半径生成 5 个 `M1TestEnemyClass`。编辑器侧 `BP_ArenaGameMode` 的 `M1TestEnemyClass` 指 `BP_EnemyBasic`。`EnemyAIController` 是空类不干扰。spline/波次代码保留待 M2。
+
+## 🎉 M1 已达成（顶下视角 WASD+鼠标瞄准+左键砍倒会追你的假人）。后续 M2/M3/M4 各自单独排计划。
+- **输入归属约定**：操控骑士的输入（Move/Attack/技能）放 `AricHero`；玩家层输入（UI/暂停/未来升级选择）放 PC。`IMC_Valoris` 是玩家级统一一份。PC 里旧 RTS 输入（右键指挥/相机缩放/建造）possess 骑士后失效，M1 暂留不清理，后续里程碑专门清。
+- **M1后待办（已知瑕疵）**：移动动画方向化——T3 朝向解耦后，侧/背身跑仍播向前跑动画。Aric 自带整套 8 方向动画（`Content/Animations/Heroes/Aric/Sword_and_shield/`，Run/Dodge/Hit 全是 `F_0/F_L_45/L_90/B_180` 等方向命名，还有多套连招/Execution/Block），**无需 retarget 官方**，M1 后用自家动画搭 Motion Matching 或 2D BlendSpace + AimOffset。详见 memory `arena-directional-locomotion`。
+- **待用户提供**：竞技场关卡名/路径。
+- **MCP**：暂不装（选了方案 B：先推进度，少摩擦），等 UE 5.8 官方 MCP 出来再评估（免费 `github.com/remiphilippe/mcp-unreal` 是社区备选，需 Go+插件重编+会话重启）。
+- 视角风格已确认：**英雄联盟那种斜俯视(顶下固定俯角)**，C++ 已实现，数值可微调。
+
+---
+
 > 注：本计划只覆盖 M1。M2（波次环绕生成+胜负+重开）、M3（敌人反击+闪避）、M4（三选一升级）等后续里程碑各自单独排计划，先拿下 M1 的可见胜利。
 
 ---
@@ -104,7 +127,7 @@ DefaultPawnClass = AAricHero::StaticClass();
 并 `#include "../Character/AricHero.h"`。
 
 - [ ] **1.3 编辑器配置**
-  - 新建 `BP_ArenaGameMode`（父类 `ValorisGameMode`），`DefaultPawnClass = BP_Aric`（带网格+ABP+技能+属性的那个），`PlayerControllerClass = ValorisPlayerController`。
+  - 新建 `BP_ArenaGameMode`（父类 `ValorisGameMode`），`DefaultPawnClass = BP_Aric`（带网格+ABP+技能+属性的那个），`PlayerControllerClass = BP_ValorisPlayerController`（**必须用 BP 版，不是 C++ 的 `ValorisPlayerController`**——`DefaultMappingContext=IMC_Valoris` 等资产引用设在 BP 上，用 C++ 类会丢失 IMC 导致所有 Enhanced Input 失效）。
   - 竞技场关卡 World Settings → GameMode Override = `BP_ArenaGameMode`。
   - 关卡里放一个 `PlayerStart`。
   - 暂时移除场景中手动摆放的 `BP_Aric` 实例（避免和 GameMode 生成的玩家骑士重复）。
