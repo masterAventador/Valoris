@@ -98,12 +98,6 @@ void AEnemyBase::SetPath(AEnemyPath* InPath)
 
 void AEnemyBase::OnReachedEnd_Implementation()
 {
-	// 对基地造成伤害
-	if (AValorisGameMode* GameMode = Cast<AValorisGameMode>(GetWorld()->GetAuthGameMode()))
-	{
-		GameMode->DamageBase(BaseDamage);
-	}
-
-	// 销毁敌人（不标记为击杀，不给奖励）
+	// 竞技场不再有"到达基地"概念（敌人直接追玩家）。路径系统属塔防遗留，留待清理里程碑。
 	Destroy();
 }

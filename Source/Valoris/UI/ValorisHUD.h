@@ -31,10 +31,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "HUD")
 	void UpdateWaveDisplay(int32 CurrentWave, int32 TotalWaves);
 
-	// 更新基地生命值显示
-	UFUNCTION(BlueprintCallable, Category = "HUD")
-	void UpdateBaseHealthDisplay(float CurrentHealth, float MaxHealth);
-
 	// 显示游戏结果
 	UFUNCTION(BlueprintCallable, Category = "HUD")
 	void ShowGameResult(bool bVictory);
@@ -54,10 +50,6 @@ protected:
 	UFUNCTION()
 	void OnAllWavesCompleted();
 
-	// 基地生命值变化回调
-	UFUNCTION()
-	void OnBaseHealthChanged(float NewHealth, float MaxHealth);
-
 	// 游戏结束回调
 	UFUNCTION()
 	void OnGameOver(bool bVictory);
@@ -71,10 +63,6 @@ protected:
 	// 波次文本
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UTextBlock> WaveText;
-
-	// 基地生命值文本
-	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UTextBlock> BaseHealthText;
 
 	// 游戏结果文本
 	UPROPERTY(meta = (BindWidgetOptional))

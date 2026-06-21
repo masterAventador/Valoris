@@ -8,6 +8,7 @@
 #include "../Enemy/EnemyPath.h"
 #include "../Data/WaveData.h"
 #include "../Economy/ResourceManager.h"
+#include "ArenaSpawnUtils.h"
 #include "Kismet/GameplayStatics.h"
 #include "TimerManager.h"
 
@@ -25,39 +26,9 @@ void AValorisGameMode::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// 初始化基地生命值
-	BaseHealth = BaseMaxHealth;
-
-	// M1：延迟生成测试敌人（延迟确保玩家 Pawn 已 spawn/possess，否则取不到玩家位置）
-	// M2 接回正式波次系统时改回 StartWaves()
-	if (M1TestEnemyClass)
-	{
-		GetWorld()->GetTimerManager().SetTimer(
-			SpawnTimerHandle, this, &AValorisGameMode::SpawnM1TestEnemies, 0.5f, false);
-	}
-}
-
-void AValorisGameMode::SpawnM1TestEnemies()
-{
-	if (!M1TestEnemyClass)
-	{
-		return;
-	}
-
-	APawn* Player = UGameplayStatics::GetPlayerPawn(this, 0);
-	const FVector Center = Player ? Player->GetActorLocation() : FVector::ZeroVector;
-
-	// 在玩家四周等角度生成几个测试假人（M2 接回正式波次系统）
-	constexpr int32 EnemyCount = 5;
-	for (int32 i = 0; i < EnemyCount; ++i)
-	{
-		const float AngleDeg = i * (360.f / EnemyCount);
-		const FVector SpawnPos = Center + FRotator(0.f, AngleDeg, 0.f).Vector() * 800.f + FVector(0.f, 0.f, 100.f);
-
-		FActorSpawnParameters Params;
-		Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
-		GetWorld()->SpawnActor<AEnemyBase>(M1TestEnemyClass, SpawnPos, FRotator::ZeroRotator, Params);
-	}
+	// 延迟开波：确保玩家 Pawn 已 spawn/possess（环形生成要取玩家位置）
+	GetWorld()->GetTimerManager().SetTimer(
+		SpawnTimerHandle, this, &AValorisGameMode::StartWaves, 0.5f, false);
 }
 
 void AValorisGameMode::StartWaves()
@@ -68,13 +39,8 @@ void AValorisGameMode::StartWaves()
 		return;
 	}
 
-	if (!EnemyPath)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("ValorisGameMode: No EnemyPath found!"));
-		return;
-	}
-
 	CurrentWaveIndex = -1;
+	SpawnIndex = 0;
 	StartNextWave();
 }
 
@@ -113,31 +79,24 @@ bool AValorisGameMode::AreAllWavesCompleted() const
 
 void AValorisGameMode::SpawnEnemy(TSubclassOf<AEnemyBase> EnemyClass)
 {
-	if (!EnemyClass || !EnemyPath)
+	if (!EnemyClass)
 	{
 		return;
 	}
 
-	// 在路径起点生成敌人
-	FVector SpawnLocation = EnemyPath->GetLocationAtDistance(0.f);
-	FRotator SpawnRotation = EnemyPath->GetRotationAtDistance(0.f);
-
-	// 稍微抬高一点，避免卡地面
-	SpawnLocation.Z += 100.f;
+	APawn* Player = UGameplayStatics::GetPlayerPawn(this, 0);
+	const FVector Center = Player ? Player->GetActorLocation() : FVector::ZeroVector;
+	const FVector SpawnLocation = ArenaSpawn::ComputeRingSpawnLocation(Center, SpawnIndex++, SpawnRadius, 100.f);
 
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 
-	AEnemyBase* Enemy = GetWorld()->SpawnActor<AEnemyBase>(EnemyClass, SpawnLocation, SpawnRotation, SpawnParams);
+	AEnemyBase* Enemy = GetWorld()->SpawnActor<AEnemyBase>(EnemyClass, SpawnLocation, FRotator::ZeroRotator, SpawnParams);
 	if (Enemy)
 	{
-		// 设置路径
-		Enemy->SetPath(EnemyPath);
-
-		// 监听敌人销毁事件
 		Enemy->OnDestroyed.AddDynamic(this, &AValorisGameMode::OnEnemyDestroyed);
-
 		AliveEnemyCount++;
+		OnEnemyCountChanged.Broadcast(AliveEnemyCount);
 	}
 }
 
@@ -241,6 +200,7 @@ void AValorisGameMode::CheckWaveCompletion()
 void AValorisGameMode::OnEnemyDestroyed(AActor* DestroyedActor)
 {
 	AliveEnemyCount = FMath::Max(0, AliveEnemyCount - 1);
+	OnEnemyCountChanged.Broadcast(AliveEnemyCount);
 
 	// 如果敌人是被击杀的，给予金币奖励
 	if (AEnemyBase* Enemy = Cast<AEnemyBase>(DestroyedActor))
@@ -254,28 +214,7 @@ void AValorisGameMode::OnEnemyDestroyed(AActor* DestroyedActor)
 	CheckWaveCompletion();
 }
 
-void AValorisGameMode::DamageBase(float Damage)
+void AValorisGameMode::NotifyPlayerDied()
 {
-	if (bGameOver || Damage <= 0.f)
-	{
-		return;
-	}
-
-	BaseHealth = FMath::Max(0.f, BaseHealth - Damage);
-	OnBaseHealthChanged.Broadcast(BaseHealth, BaseMaxHealth);
-
-	UE_LOG(LogTemp, Log, TEXT("Base damaged: %.0f, Remaining: %.0f/%.0f"), Damage, BaseHealth, BaseMaxHealth);
-
-	// 检查是否失败
-	if (BaseHealth <= 0.f)
-	{
-		bGameOver = true;
-		OnGameOver.Broadcast(false); // 失败
-
-		// 停止波次生成
-		GetWorld()->GetTimerManager().ClearTimer(SpawnTimerHandle);
-		GetWorld()->GetTimerManager().ClearTimer(WaveDelayTimerHandle);
-
-		UE_LOG(LogTemp, Warning, TEXT("Game Over - Defeat!"));
-	}
+	// Task 4 实现：玩家死亡 → 停波 + OnGameOver(false)
 }

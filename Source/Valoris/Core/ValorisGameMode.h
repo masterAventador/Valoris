@@ -14,8 +14,8 @@ class UResourceManager;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnWaveStarted, int32, WaveIndex);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnWaveCompleted, int32, WaveIndex);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnAllWavesCompleted);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnBaseHealthChanged, float, NewHealth, float, MaxHealth);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnGameOver, bool, bVictory);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnEnemyCountChanged, int32, NewCount);
 
 /**
  * 游戏模式基类
@@ -57,6 +57,18 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Wave")
 	bool AreAllWavesCompleted() const;
 
+	// 当前存活敌人数（HUD 显示本波剩余）
+	UFUNCTION(BlueprintCallable, Category = "Wave")
+	int32 GetAliveEnemyCount() const { return AliveEnemyCount; }
+
+	// 存活敌人数变化事件
+	UPROPERTY(BlueprintAssignable, Category = "Wave|Events")
+	FOnEnemyCountChanged OnEnemyCountChanged;
+
+	// 玩家死亡 → 失败（由 ValorisAttributeSet 在玩家血量归零时调用；Task 4 实现函数体）
+	UFUNCTION(BlueprintCallable, Category = "Game")
+	void NotifyPlayerDied();
+
 	//~ 事件
 
 	// 波次开始事件
@@ -70,24 +82,6 @@ public:
 	// 所有波次完成事件
 	UPROPERTY(BlueprintAssignable, Category = "Wave|Events")
 	FOnAllWavesCompleted OnAllWavesCompleted;
-
-	//~ 基地系统
-
-	// 获取基地当前生命值
-	UFUNCTION(BlueprintCallable, Category = "Base")
-	float GetBaseHealth() const { return BaseHealth; }
-
-	// 获取基地最大生命值
-	UFUNCTION(BlueprintCallable, Category = "Base")
-	float GetBaseMaxHealth() const { return BaseMaxHealth; }
-
-	// 对基地造成伤害
-	UFUNCTION(BlueprintCallable, Category = "Base")
-	void DamageBase(float Damage);
-
-	// 基地生命值变化事件
-	UPROPERTY(BlueprintAssignable, Category = "Base|Events")
-	FOnBaseHealthChanged OnBaseHealthChanged;
 
 	// 游戏结束事件（胜利/失败）
 	UPROPERTY(BlueprintAssignable, Category = "Game|Events")
@@ -108,9 +102,6 @@ protected:
 	// 生成下一个敌人（定时器回调）
 	void SpawnNextEnemy();
 
-	// M1：在玩家四周生成测试敌人（延迟定时器回调；M2 接回正式波次后废弃）
-	void SpawnM1TestEnemies();
-
 	// 检查当前波次是否完成
 	void CheckWaveCompletion();
 
@@ -128,9 +119,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Wave|Config")
 	TObjectPtr<AEnemyPath> EnemyPath;
 
-	// M1 测试敌人类型（在玩家四周生成；M2 接回正式波次后废弃）
-	UPROPERTY(EditDefaultsOnly, Category = "M1")
-	TSubclassOf<AEnemyBase> M1TestEnemyClass;
+	// 竞技场敌人环形生成半径（绕玩家）
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Wave|Config")
+	float SpawnRadius = 1200.f;
 
 	//~ 运行时状态
 
@@ -157,21 +148,14 @@ protected:
 	// 波次间隔定时器
 	FTimerHandle WaveDelayTimerHandle;
 
+	// 环形生成累加索引（决定每个敌人在环上的角度）
+	int32 SpawnIndex = 0;
+
 	//~ 资源
 
 	// 资源管理器组件
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Resource")
 	TObjectPtr<UResourceManager> ResourceManager;
-
-	//~ 基地
-
-	// 基地最大生命值
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Base|Config")
-	float BaseMaxHealth = 20.f;
-
-	// 基地当前生命值
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "Base|State")
-	float BaseHealth = 20.f;
 
 	// 游戏是否已结束
 	bool bGameOver = false;
