@@ -4,10 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "Components/ProgressBar.h"
 #include "ValorisHUD.generated.h"
 
 class UTextBlock;
-class UResourceManager;
 
 /**
  * 游戏主 HUD
@@ -23,10 +23,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "HUD")
 	void InitializeHUD();
 
-	// 更新金币显示
-	UFUNCTION(BlueprintCallable, Category = "HUD")
-	void UpdateGoldDisplay(int32 NewGold);
-
 	// 更新波次显示
 	UFUNCTION(BlueprintCallable, Category = "HUD")
 	void UpdateWaveDisplay(int32 CurrentWave, int32 TotalWaves);
@@ -37,10 +33,6 @@ public:
 
 protected:
 	virtual void NativeConstruct() override;
-
-	// 金币变化回调
-	UFUNCTION()
-	void OnGoldChanged(int32 NewGold, int32 Delta);
 
 	// 波次开始回调
 	UFUNCTION()
@@ -54,11 +46,29 @@ protected:
 	UFUNCTION()
 	void OnGameOver(bool bVictory);
 
+	// 玩家血量变化回调
+	void OnPlayerHealthChanged(const struct FOnAttributeChangeData& Data);
+
+	// 剩余敌人数变化回调
+	UFUNCTION()
+	void OnEnemyCountChanged(int32 NewCount);
+
+	// 刷新玩家血条百分比
+	void RefreshPlayerHealth();
+
 	//~ UI 组件（在蓝图中绑定）
 
-	// 金币文本
-	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UTextBlock> GoldText;
+	// 玩家血条
+	UPROPERTY(meta = (BindWidgetOptional))
+	TObjectPtr<class UProgressBar> PlayerHealthBar;
+
+	// 本波剩余敌人数文本
+	UPROPERTY(meta = (BindWidgetOptional))
+	TObjectPtr<UTextBlock> RemainingEnemiesText;
+
+	// "第 N 波" 横幅文本
+	UPROPERTY(meta = (BindWidgetOptional))
+	TObjectPtr<UTextBlock> WaveBannerText;
 
 	// 波次文本
 	UPROPERTY(meta = (BindWidget))

@@ -2,9 +2,12 @@
 
 #include "ValorisHUD.h"
 #include "Components/TextBlock.h"
+#include "Components/ProgressBar.h"
 #include "Kismet/GameplayStatics.h"
+#include "AbilitySystemComponent.h"
+#include "AbilitySystemBlueprintLibrary.h"
 #include "../Core/ValorisGameMode.h"
-#include "../Economy/ResourceManager.h"
+#include "../GAS/ValorisAttributeSet.h"
 
 void UValorisHUD::NativeConstruct()
 {
@@ -21,21 +24,27 @@ void UValorisHUD::InitializeHUD()
 		return;
 	}
 
-	// 绑定资源管理器事件
-	if (UResourceManager* ResourceManager = GameMode->GetResourceManager())
-	{
-		ResourceManager->OnGoldChanged.AddDynamic(this, &UValorisHUD::OnGoldChanged);
-
-		// 初始化显示
-		UpdateGoldDisplay(ResourceManager->GetGold());
-	}
-
 	// 绑定波次事件
 	GameMode->OnWaveStarted.AddDynamic(this, &UValorisHUD::OnWaveStarted);
 	GameMode->OnAllWavesCompleted.AddDynamic(this, &UValorisHUD::OnAllWavesCompleted);
 
 	// 绑定游戏结束事件
 	GameMode->OnGameOver.AddDynamic(this, &UValorisHUD::OnGameOver);
+
+	// 剩余敌人数
+	GameMode->OnEnemyCountChanged.AddDynamic(this, &UValorisHUD::OnEnemyCountChanged);
+	OnEnemyCountChanged(GameMode->GetAliveEnemyCount());
+
+	// 玩家血条：绑玩家 ASC 的 Health 变化
+	if (APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(GetWorld(), 0))
+	{
+		if (UAbilitySystemComponent* ASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(PlayerPawn))
+		{
+			ASC->GetGameplayAttributeValueChangeDelegate(UValorisAttributeSet::GetHealthAttribute())
+				.AddUObject(this, &UValorisHUD::OnPlayerHealthChanged);
+			RefreshPlayerHealth();
+		}
+	}
 
 	// 初始化波次显示
 	UpdateWaveDisplay(GameMode->GetCurrentWaveIndex() + 1, GameMode->GetTotalWaves());
@@ -45,13 +54,11 @@ void UValorisHUD::InitializeHUD()
 	{
 		GameResultText->SetVisibility(ESlateVisibility::Hidden);
 	}
-}
 
-void UValorisHUD::UpdateGoldDisplay(int32 NewGold)
-{
-	if (GoldText)
+	// 隐藏波次横幅初始
+	if (WaveBannerText)
 	{
-		GoldText->SetText(FText::FromString(FString::Printf(TEXT("%d"), NewGold)));
+		WaveBannerText->SetVisibility(ESlateVisibility::Hidden);
 	}
 }
 
@@ -63,9 +70,34 @@ void UValorisHUD::UpdateWaveDisplay(int32 CurrentWave, int32 TotalWaves)
 	}
 }
 
-void UValorisHUD::OnGoldChanged(int32 NewGold, int32 Delta)
+void UValorisHUD::OnEnemyCountChanged(int32 NewCount)
 {
-	UpdateGoldDisplay(NewGold);
+	if (RemainingEnemiesText)
+	{
+		RemainingEnemiesText->SetText(FText::FromString(FString::Printf(TEXT("%d"), NewCount)));
+	}
+}
+
+void UValorisHUD::OnPlayerHealthChanged(const FOnAttributeChangeData& Data)
+{
+	RefreshPlayerHealth();
+}
+
+void UValorisHUD::RefreshPlayerHealth()
+{
+	if (!PlayerHealthBar)
+	{
+		return;
+	}
+	APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
+	UAbilitySystemComponent* ASC = PlayerPawn ? UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(PlayerPawn) : nullptr;
+	if (!ASC)
+	{
+		return;
+	}
+	const float H = ASC->GetNumericAttribute(UValorisAttributeSet::GetHealthAttribute());
+	const float MaxH = ASC->GetNumericAttribute(UValorisAttributeSet::GetMaxHealthAttribute());
+	PlayerHealthBar->SetPercent(MaxH > 0.f ? H / MaxH : 0.f);
 }
 
 void UValorisHUD::OnWaveStarted(int32 WaveIndex)
@@ -75,6 +107,17 @@ void UValorisHUD::OnWaveStarted(int32 WaveIndex)
 	{
 		// WaveIndex 是从 0 开始的，显示时 +1
 		UpdateWaveDisplay(WaveIndex + 1, GameMode->GetTotalWaves());
+	}
+
+	if (WaveBannerText)
+	{
+		WaveBannerText->SetText(FText::FromString(FString::Printf(TEXT("第 %d 波"), WaveIndex + 1)));
+		WaveBannerText->SetVisibility(ESlateVisibility::HitTestInvisible);
+		FTimerHandle BannerTimer;
+		GetWorld()->GetTimerManager().SetTimer(BannerTimer, [this]()
+		{
+			if (WaveBannerText) { WaveBannerText->SetVisibility(ESlateVisibility::Hidden); }
+		}, 2.0f, false);
 	}
 }
 
