@@ -64,6 +64,9 @@ Saved/
 # Claude Code temp files
 tmpclaude-*
 
+# Subagent-driven development scratch (任务简报/报告/进度账本)
+.superpowers/
+
 # Cache files
 *.VC.db
 *.VC.VC.opendb
