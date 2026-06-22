@@ -9,6 +9,11 @@
 #include "../Core/ValorisGameMode.h"
 #include "../UI/HealthBarWidget.h"
 #include "Kismet/GameplayStatics.h"
+#include "AbilitySystemComponent.h"
+#include "AbilitySystemBlueprintLibrary.h"
+#include "../Combat/ArenaCombatUtils.h"
+#include "../GAS/GE_Damage.h"
+#include "../GAS/ValorisGameplayTags.h"
 
 AEnemyBase::AEnemyBase()
 {
@@ -24,6 +29,8 @@ AEnemyBase::AEnemyBase()
 	HealthBarComponent->SetupAttachment(RootComponent);
 	HealthBarComponent->SetWidgetSpace(EWidgetSpace::Screen);
 	HealthBarComponent->SetDrawAtDesiredSize(true);
+
+	ContactDamageEffect = UGE_Damage::StaticClass();
 }
 
 void AEnemyBase::BeginPlay()
@@ -76,6 +83,43 @@ void AEnemyBase::Tick(float DeltaTime)
 		const FVector Dir = ToPlayer.GetSafeNormal();
 		AddMovementInput(Dir, 1.f);
 		SetActorRotation(FRotator(0.f, Dir.Rotation().Yaw, 0.f));
+	}
+
+	// 贴身则按间隔对玩家施加接触伤害；离开接触重置节拍
+	if (Distance <= 120.f)
+	{
+		if (ArenaCombat::AdvanceContactDamageTimer(ContactDamageAccumulator, DeltaTime, ContactDamageInterval))
+		{
+			ApplyContactDamageTo(Player);
+		}
+	}
+	else
+	{
+		ContactDamageAccumulator = 0.f;
+	}
+}
+
+void AEnemyBase::ApplyContactDamageTo(AActor* Target)
+{
+	if (!Target || !ContactDamageEffect)
+	{
+		return;
+	}
+
+	UAbilitySystemComponent* SelfASC = GetAbilitySystemComponent();
+	UAbilitySystemComponent* TargetASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(Target);
+	if (!SelfASC || !TargetASC)
+	{
+		return;
+	}
+
+	FGameplayEffectContextHandle Ctx = SelfASC->MakeEffectContext();
+	Ctx.AddSourceObject(this);
+	FGameplayEffectSpecHandle Spec = SelfASC->MakeOutgoingSpec(ContactDamageEffect, 1.f, Ctx);
+	if (Spec.IsValid())
+	{
+		Spec.Data->SetSetByCallerMagnitude(FValorisGameplayTags::Data_Damage, ContactDamage);
+		TargetASC->ApplyGameplayEffectSpecToSelf(*Spec.Data.Get());
 	}
 }
 
