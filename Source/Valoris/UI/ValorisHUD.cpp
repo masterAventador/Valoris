@@ -3,7 +3,10 @@
 #include "ValorisHUD.h"
 #include "Components/TextBlock.h"
 #include "Components/ProgressBar.h"
+#include "Components/Button.h"
+#include "Components/PanelWidget.h"
 #include "Kismet/GameplayStatics.h"
+#include "GameFramework/PlayerController.h"
 #include "AbilitySystemComponent.h"
 #include "AbilitySystemBlueprintLibrary.h"
 #include "../Core/ValorisGameMode.h"
@@ -49,16 +52,20 @@ void UValorisHUD::InitializeHUD()
 	// 初始化波次显示
 	UpdateWaveDisplay(GameMode->GetCurrentWaveIndex() + 1, GameMode->GetTotalWaves());
 
-	// 隐藏游戏结果文本
-	if (GameResultText)
-	{
-		GameResultText->SetVisibility(ESlateVisibility::Hidden);
-	}
-
 	// 隐藏波次横幅初始
 	if (WaveBannerText)
 	{
 		WaveBannerText->SetVisibility(ESlateVisibility::Hidden);
+	}
+
+	// 隐藏结算面板 + 绑重开按钮
+	if (GameOverPanel)
+	{
+		GameOverPanel->SetVisibility(ESlateVisibility::Hidden);
+	}
+	if (RestartButton)
+	{
+		RestartButton->OnClicked.AddDynamic(this, &UValorisHUD::OnRestartClicked);
 	}
 }
 
@@ -129,16 +136,38 @@ void UValorisHUD::OnAllWavesCompleted()
 	}
 }
 
-void UValorisHUD::ShowGameResult(bool bVictory)
+void UValorisHUD::OnGameOver(bool bVictory)
 {
-	if (GameResultText)
+	if (GameOverResultText)
 	{
-		GameResultText->SetText(FText::FromString(bVictory ? TEXT("VICTORY!") : TEXT("DEFEAT!")));
-		GameResultText->SetVisibility(ESlateVisibility::Visible);
+		GameOverResultText->SetText(FText::FromString(bVictory ? TEXT("胜利！") : TEXT("失败")));
+	}
+	if (GameOverWavesText)
+	{
+		AValorisGameMode* GameMode = Cast<AValorisGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
+		const int32 Waves = GameMode ? (GameMode->GetCurrentWaveIndex() + 1) : 0;
+		GameOverWavesText->SetText(FText::FromString(FString::Printf(TEXT("撑过 %d 波"), Waves)));
+	}
+	if (GameOverPanel)
+	{
+		GameOverPanel->SetVisibility(ESlateVisibility::Visible);
+	}
+
+	// 暂停 + 解锁鼠标，便于点重开
+	if (APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0))
+	{
+		PC->SetPause(true);
+		PC->bShowMouseCursor = true;
+		PC->SetInputMode(FInputModeUIOnly());
 	}
 }
 
-void UValorisHUD::OnGameOver(bool bVictory)
+void UValorisHUD::OnRestartClicked()
 {
-	ShowGameResult(bVictory);
+	if (APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0))
+	{
+		PC->SetPause(false);
+	}
+	const FName CurrentLevel(*UGameplayStatics::GetCurrentLevelName(GetWorld(), true));
+	UGameplayStatics::OpenLevel(GetWorld(), CurrentLevel);
 }

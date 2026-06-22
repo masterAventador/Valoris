@@ -8,6 +8,8 @@
 #include "ValorisHUD.generated.h"
 
 class UTextBlock;
+class UButton;
+class UPanelWidget;
 
 /**
  * 游戏主 HUD
@@ -27,10 +29,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "HUD")
 	void UpdateWaveDisplay(int32 CurrentWave, int32 TotalWaves);
 
-	// 显示游戏结果
-	UFUNCTION(BlueprintCallable, Category = "HUD")
-	void ShowGameResult(bool bVictory);
-
 protected:
 	virtual void NativeConstruct() override;
 
@@ -45,6 +43,10 @@ protected:
 	// 游戏结束回调
 	UFUNCTION()
 	void OnGameOver(bool bVictory);
+
+	// 重开按钮点击回调
+	UFUNCTION()
+	void OnRestartClicked();
 
 	// 玩家血量变化回调
 	void OnPlayerHealthChanged(const struct FOnAttributeChangeData& Data);
@@ -74,7 +76,16 @@ protected:
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UTextBlock> WaveText;
 
-	// 游戏结果文本
+	// 结算面板（胜负 + 撑过波数 + 重开）
 	UPROPERTY(meta = (BindWidgetOptional))
-	TObjectPtr<UTextBlock> GameResultText;
+	TObjectPtr<UPanelWidget> GameOverPanel;
+
+	UPROPERTY(meta = (BindWidgetOptional))
+	TObjectPtr<UTextBlock> GameOverResultText;
+
+	UPROPERTY(meta = (BindWidgetOptional))
+	TObjectPtr<UTextBlock> GameOverWavesText;
+
+	UPROPERTY(meta = (BindWidgetOptional))
+	TObjectPtr<UButton> RestartButton;
 };
