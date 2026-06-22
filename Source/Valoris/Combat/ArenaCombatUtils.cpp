@@ -15,3 +15,8 @@ bool ArenaCombat::AdvanceContactDamageTimer(float& Accumulator, float DeltaTime,
     }
     return false;
 }
+
+float ArenaCombat::ComputeMitigatedDamage(float BaseDamage, float Defense)
+{
+    return FMath::Max(1.f, BaseDamage - Defense);
+}

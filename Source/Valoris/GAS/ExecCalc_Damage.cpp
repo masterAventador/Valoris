@@ -4,6 +4,7 @@
 #include "ValorisAttributeSet.h"
 #include "ValorisGameplayTags.h"
 #include "AbilitySystemComponent.h"
+#include "../Combat/ArenaCombatUtils.h"
 
 // 声明要捕获的属性
 struct FDamageStatics
@@ -45,7 +46,7 @@ void UExecCalc_Damage::Execute_Implementation(const FGameplayEffectCustomExecuti
 	ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(DamageStatics().DefenseDef, EvaluateParams, Defense);
 
 	// 计算最终伤害：基础伤害 - 防御力（最低为1）
-	float FinalDamage = FMath::Max(1.f, BaseDamage - Defense);
+	float FinalDamage = ArenaCombat::ComputeMitigatedDamage(BaseDamage, Defense);
 
 	// 输出到 IncomingDamage 属性
 	if (FinalDamage > 0.f)

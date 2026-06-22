@@ -51,8 +51,8 @@ void UValorisAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCal
 
 		if (Damage > 0.f)
 		{
-			// 计算实际伤害（可以加入防御计算）
-			const float ActualDamage = FMath::Max(Damage - GetDefense(), 0.f);
+			// 伤害已在 ExecCalc_Damage 减过防御，这里不再二次减（修复双重扣防御 bug）
+			const float ActualDamage = Damage;
 
 			// 扣血
 			const float NewHealth = GetHealth() - ActualDamage;

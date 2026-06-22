@@ -19,4 +19,16 @@ bool FArenaContactDamageTimerTest::RunTest(const FString& Parameters)
     return true;
 }
 
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FArenaComputeMitigatedDamageTest,
+    "Valoris.ArenaCombat.ComputeMitigatedDamage",
+    EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+
+bool FArenaComputeMitigatedDamageTest::RunTest(const FString& Parameters)
+{
+    TestEqual(TEXT("100 伤害 - 5 防御 = 95"), ArenaCombat::ComputeMitigatedDamage(100.f, 5.f), 95.f, 0.001f);
+    TestEqual(TEXT("3 伤害 - 5 防御 = 最低 1"), ArenaCombat::ComputeMitigatedDamage(3.f, 5.f), 1.f, 0.001f);
+    TestEqual(TEXT("等量：5 - 5 = 最低 1"), ArenaCombat::ComputeMitigatedDamage(5.f, 5.f), 1.f, 0.001f);
+    return true;
+}
+
 #endif
