@@ -13,7 +13,7 @@ class UPanelWidget;
 
 /**
  * 游戏主 HUD
- * 显示金币、波次等信息
+ * 显示玩家血条、当前/总波数、本波剩余敌人、第N波横幅、胜负结算屏
  */
 UCLASS()
 class VALORIS_API UValorisHUD : public UUserWidget
