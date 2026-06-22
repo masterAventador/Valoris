@@ -4,6 +4,9 @@
 #include "GameplayEffectExtension.h"
 #include "Net/UnrealNetwork.h"
 #include "../Enemy/EnemyBase.h"
+#include "../Character/AricHero.h"
+#include "../Core/ValorisGameMode.h"
+#include "Kismet/GameplayStatics.h"
 
 UValorisAttributeSet::UValorisAttributeSet()
 {
@@ -65,11 +68,18 @@ void UValorisAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCal
 					OwnerActor = ASC->GetAvatarActor();
 				}
 
-				// 如果是敌人，标记为被击杀并销毁
+				// 如果是敌人，标记为被击杀并销毁；如果是玩家，通知 GameMode 失败
 				if (AEnemyBase* Enemy = Cast<AEnemyBase>(OwnerActor))
 				{
 					Enemy->MarkAsKilled();
 					Enemy->Destroy();
+				}
+				else if (Cast<AAricHero>(OwnerActor))
+				{
+					if (AValorisGameMode* GM = Cast<AValorisGameMode>(UGameplayStatics::GetGameMode(OwnerActor)))
+					{
+						GM->NotifyPlayerDied();
+					}
 				}
 			}
 		}

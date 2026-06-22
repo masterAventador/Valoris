@@ -216,5 +216,16 @@ void AValorisGameMode::OnEnemyDestroyed(AActor* DestroyedActor)
 
 void AValorisGameMode::NotifyPlayerDied()
 {
-	// Task 4 实现：玩家死亡 → 停波 + OnGameOver(false)
+	if (bGameOver)
+	{
+		return;
+	}
+	bGameOver = true;
+
+	// 停止波次生成
+	GetWorld()->GetTimerManager().ClearTimer(SpawnTimerHandle);
+	GetWorld()->GetTimerManager().ClearTimer(WaveDelayTimerHandle);
+
+	OnGameOver.Broadcast(false); // 失败
+	UE_LOG(LogTemp, Warning, TEXT("Game Over - Defeat (player died)!"));
 }
