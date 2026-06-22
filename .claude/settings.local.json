@@ -12,9 +12,15 @@
       "Bash(git -C \"F:/Valoris\" push)",
       "WebSearch",
       "WebFetch(domain:forums.unrealengine.com)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "mcp__unreal-mcp",
+      "Skill(deep-research)"
     ],
     "deny": [],
     "ask": []
-  }
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "unreal-mcp"
+  ]
 }

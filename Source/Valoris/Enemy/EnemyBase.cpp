@@ -9,6 +9,11 @@
 #include "../Core/ValorisGameMode.h"
 #include "../UI/HealthBarWidget.h"
 #include "Kismet/GameplayStatics.h"
+#include "AbilitySystemComponent.h"
+#include "AbilitySystemBlueprintLibrary.h"
+#include "../Combat/ArenaCombatUtils.h"
+#include "../GAS/GE_Damage.h"
+#include "../GAS/ValorisGameplayTags.h"
 
 AEnemyBase::AEnemyBase()
 {
@@ -24,6 +29,8 @@ AEnemyBase::AEnemyBase()
 	HealthBarComponent->SetupAttachment(RootComponent);
 	HealthBarComponent->SetWidgetSpace(EWidgetSpace::Screen);
 	HealthBarComponent->SetDrawAtDesiredSize(true);
+
+	ContactDamageEffect = UGE_Damage::StaticClass();
 }
 
 void AEnemyBase::BeginPlay()
@@ -77,6 +84,43 @@ void AEnemyBase::Tick(float DeltaTime)
 		AddMovementInput(Dir, 1.f);
 		SetActorRotation(FRotator(0.f, Dir.Rotation().Yaw, 0.f));
 	}
+
+	// 贴身则按间隔对玩家施加接触伤害；离开接触重置节拍
+	if (Distance <= 120.f)
+	{
+		if (ArenaCombat::AdvanceContactDamageTimer(ContactDamageAccumulator, DeltaTime, ContactDamageInterval))
+		{
+			ApplyContactDamageTo(Player);
+		}
+	}
+	else
+	{
+		ContactDamageAccumulator = 0.f;
+	}
+}
+
+void AEnemyBase::ApplyContactDamageTo(AActor* Target)
+{
+	if (!Target || !ContactDamageEffect)
+	{
+		return;
+	}
+
+	UAbilitySystemComponent* SelfASC = GetAbilitySystemComponent();
+	UAbilitySystemComponent* TargetASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(Target);
+	if (!SelfASC || !TargetASC)
+	{
+		return;
+	}
+
+	FGameplayEffectContextHandle Ctx = SelfASC->MakeEffectContext();
+	Ctx.AddSourceObject(this);
+	FGameplayEffectSpecHandle Spec = SelfASC->MakeOutgoingSpec(ContactDamageEffect, 1.f, Ctx);
+	if (Spec.IsValid())
+	{
+		Spec.Data->SetSetByCallerMagnitude(FValorisGameplayTags::Data_Damage, ContactDamage);
+		TargetASC->ApplyGameplayEffectSpecToSelf(*Spec.Data.Get());
+	}
 }
 
 void AEnemyBase::SetPath(AEnemyPath* InPath)
@@ -98,12 +142,6 @@ void AEnemyBase::SetPath(AEnemyPath* InPath)
 
 void AEnemyBase::OnReachedEnd_Implementation()
 {
-	// 对基地造成伤害
-	if (AValorisGameMode* GameMode = Cast<AValorisGameMode>(GetWorld()->GetAuthGameMode()))
-	{
-		GameMode->DamageBase(BaseDamage);
-	}
-
-	// 销毁敌人（不标记为击杀，不给奖励）
+	// 竞技场不再有"到达基地"概念（敌人直接追玩家）。路径系统属塔防遗留，留待清理里程碑。
 	Destroy();
 }

@@ -4,14 +4,16 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "Components/ProgressBar.h"
 #include "ValorisHUD.generated.h"
 
 class UTextBlock;
-class UResourceManager;
+class UButton;
+class UPanelWidget;
 
 /**
  * 游戏主 HUD
- * 显示金币、波次等信息
+ * 显示玩家血条、当前/总波数、本波剩余敌人、第N波横幅、胜负结算屏
  */
 UCLASS()
 class VALORIS_API UValorisHUD : public UUserWidget
@@ -23,28 +25,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "HUD")
 	void InitializeHUD();
 
-	// 更新金币显示
-	UFUNCTION(BlueprintCallable, Category = "HUD")
-	void UpdateGoldDisplay(int32 NewGold);
-
 	// 更新波次显示
 	UFUNCTION(BlueprintCallable, Category = "HUD")
 	void UpdateWaveDisplay(int32 CurrentWave, int32 TotalWaves);
 
-	// 更新基地生命值显示
-	UFUNCTION(BlueprintCallable, Category = "HUD")
-	void UpdateBaseHealthDisplay(float CurrentHealth, float MaxHealth);
-
-	// 显示游戏结果
-	UFUNCTION(BlueprintCallable, Category = "HUD")
-	void ShowGameResult(bool bVictory);
-
 protected:
 	virtual void NativeConstruct() override;
-
-	// 金币变化回调
-	UFUNCTION()
-	void OnGoldChanged(int32 NewGold, int32 Delta);
 
 	// 波次开始回调
 	UFUNCTION()
@@ -54,29 +40,52 @@ protected:
 	UFUNCTION()
 	void OnAllWavesCompleted();
 
-	// 基地生命值变化回调
-	UFUNCTION()
-	void OnBaseHealthChanged(float NewHealth, float MaxHealth);
-
 	// 游戏结束回调
 	UFUNCTION()
 	void OnGameOver(bool bVictory);
 
+	// 重开按钮点击回调
+	UFUNCTION()
+	void OnRestartClicked();
+
+	// 玩家血量变化回调
+	void OnPlayerHealthChanged(const struct FOnAttributeChangeData& Data);
+
+	// 剩余敌人数变化回调
+	UFUNCTION()
+	void OnEnemyCountChanged(int32 NewCount);
+
+	// 刷新玩家血条百分比
+	void RefreshPlayerHealth();
+
 	//~ UI 组件（在蓝图中绑定）
 
-	// 金币文本
-	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UTextBlock> GoldText;
+	// 玩家血条
+	UPROPERTY(meta = (BindWidgetOptional))
+	TObjectPtr<class UProgressBar> PlayerHealthBar;
+
+	// 本波剩余敌人数文本
+	UPROPERTY(meta = (BindWidgetOptional))
+	TObjectPtr<UTextBlock> RemainingEnemiesText;
+
+	// "第 N 波" 横幅文本
+	UPROPERTY(meta = (BindWidgetOptional))
+	TObjectPtr<UTextBlock> WaveBannerText;
 
 	// 波次文本
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UTextBlock> WaveText;
 
-	// 基地生命值文本
-	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UTextBlock> BaseHealthText;
-
-	// 游戏结果文本
+	// 结算面板（胜负 + 撑过波数 + 重开）
 	UPROPERTY(meta = (BindWidgetOptional))
-	TObjectPtr<UTextBlock> GameResultText;
+	TObjectPtr<UPanelWidget> GameOverPanel;
+
+	UPROPERTY(meta = (BindWidgetOptional))
+	TObjectPtr<UTextBlock> GameOverResultText;
+
+	UPROPERTY(meta = (BindWidgetOptional))
+	TObjectPtr<UTextBlock> GameOverWavesText;
+
+	UPROPERTY(meta = (BindWidgetOptional))
+	TObjectPtr<UButton> RestartButton;
 };

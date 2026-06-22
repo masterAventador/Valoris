@@ -95,4 +95,24 @@ protected:
 
 	// 初始化血条
 	void InitializeHealthBar();
+
+	// ========== 接触伤害 ==========
+
+	// 接触伤害：贴身时按间隔对玩家施加的 GameplayEffect（默认 GE_Damage）
+	UPROPERTY(EditDefaultsOnly, Category = "Enemy|Combat")
+	TSubclassOf<class UGameplayEffect> ContactDamageEffect;
+
+	// 单次接触伤害值
+	UPROPERTY(EditDefaultsOnly, Category = "Enemy|Combat")
+	float ContactDamage = 5.f;
+
+	// 接触伤害间隔（秒）
+	UPROPERTY(EditDefaultsOnly, Category = "Enemy|Combat")
+	float ContactDamageInterval = 0.5f;
+
+	// 接触伤害节拍累加器
+	float ContactDamageAccumulator = 0.f;
+
+	// 对目标施加一次接触伤害
+	void ApplyContactDamageTo(AActor* Target);
 };
