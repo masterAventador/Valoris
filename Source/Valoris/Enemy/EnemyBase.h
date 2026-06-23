@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "../Character/ValorisCharacterBase.h"
+#include "../Combat/ArenaCombatUtils.h"
 #include "EnemyBase.generated.h"
 
 class AEnemyPath;
@@ -96,23 +97,47 @@ protected:
 	// 初始化血条
 	void InitializeHealthBar();
 
-	// ========== 接触伤害 ==========
+	// ========== 近战攻击 ==========
 
-	// 接触伤害：贴身时按间隔对玩家施加的 GameplayEffect（默认 GE_Damage）
+	// 挥击施加的 GameplayEffect（默认 GE_Damage）
 	UPROPERTY(EditDefaultsOnly, Category = "Enemy|Combat")
-	TSubclassOf<class UGameplayEffect> ContactDamageEffect;
+	TSubclassOf<class UGameplayEffect> MeleeDamageEffect;
 
-	// 单次接触伤害值
+	// 进入此距离则停下起手前摇
 	UPROPERTY(EditDefaultsOnly, Category = "Enemy|Combat")
-	float ContactDamage = 5.f;
+	float AttackRange = 150.f;
 
-	// 接触伤害间隔（秒）
+	// 挥击命中触及距离（前摇结束时玩家在此距离内才吃伤害）
 	UPROPERTY(EditDefaultsOnly, Category = "Enemy|Combat")
-	float ContactDamageInterval = 0.5f;
+	float AttackReach = 180.f;
 
-	// 接触伤害节拍累加器
-	float ContactDamageAccumulator = 0.f;
+	// 单次挥击伤害
+	UPROPERTY(EditDefaultsOnly, Category = "Enemy|Combat")
+	float AttackDamage = 12.f;
 
-	// 对目标施加一次接触伤害
-	void ApplyContactDamageTo(AActor* Target);
+	// 前摇时长（秒）
+	UPROPERTY(EditDefaultsOnly, Category = "Enemy|Combat")
+	float WindupDuration = 0.4f;
+
+	// 挥击后冷却时长（秒）
+	UPROPERTY(EditDefaultsOnly, Category = "Enemy|Combat")
+	float RecoveryDuration = 0.5f;
+
+	// 当前攻击相位（运行时状态，非编辑器编辑）
+	ArenaCombat::EEnemyAttackPhase CurrentAttackPhase = ArenaCombat::EEnemyAttackPhase::Approaching;
+
+	// 当前相位内累计时间
+	float AttackAccumulator = 0.f;
+
+	// Mesh 初始相对缩放（前摇放大用，BeginPlay 缓存）
+	FVector InitialMeshScale = FVector::OneVector;
+
+	// 对目标施加一次挥击伤害
+	void ApplyMeleeDamageTo(AActor* Target);
+
+	// 目标是否处于无敌
+	bool IsTargetInvincible(AActor* Target) const;
+
+	// 按当前相位刷新前摇视觉（scale pulse）
+	void UpdateWindupVisual();
 };

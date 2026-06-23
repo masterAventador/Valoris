@@ -30,7 +30,7 @@ AEnemyBase::AEnemyBase()
 	HealthBarComponent->SetWidgetSpace(EWidgetSpace::Screen);
 	HealthBarComponent->SetDrawAtDesiredSize(true);
 
-	ContactDamageEffect = UGE_Damage::StaticClass();
+	MeleeDamageEffect = UGE_Damage::StaticClass();
 }
 
 void AEnemyBase::BeginPlay()
@@ -39,6 +39,11 @@ void AEnemyBase::BeginPlay()
 
 	// 初始化血条
 	InitializeHealthBar();
+
+	if (GetMesh())
+	{
+		InitialMeshScale = GetMesh()->GetRelativeScale3D();
+	}
 }
 
 void AEnemyBase::InitializeHealthBar()
@@ -65,8 +70,6 @@ void AEnemyBase::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	// M1：朝玩家移动（平地竞技场，不依赖 NavMesh，直接 AddMovementInput）
-	// M2 接回沿 Spline/正式波次时再按需切换
 	APawn* Player = UGameplayStatics::GetPlayerPawn(this, 0);
 	if (!Player)
 	{
@@ -76,32 +79,36 @@ void AEnemyBase::Tick(float DeltaTime)
 	FVector ToPlayer = Player->GetActorLocation() - GetActorLocation();
 	ToPlayer.Z = 0.f;
 	const float Distance = ToPlayer.Size();
+	const bool bInAttackRange = Distance <= AttackRange;
 
-	// 离玩家还远就继续靠近（120 以内算贴身，M1 只贴着不攻击）
-	if (Distance > 120.f)
+	// 仅 Approaching 且未进入攻击距离时追击移动
+	if (CurrentAttackPhase == ArenaCombat::EEnemyAttackPhase::Approaching && !bInAttackRange)
 	{
 		const FVector Dir = ToPlayer.GetSafeNormal();
 		AddMovementInput(Dir, 1.f);
 		SetActorRotation(FRotator(0.f, Dir.Rotation().Yaw, 0.f));
 	}
 
-	// 贴身则按间隔对玩家施加接触伤害；离开接触重置节拍
-	if (Distance <= 120.f)
+	// 推进攻击状态机
+	const ArenaCombat::FEnemyAttackStep Step = ArenaCombat::StepEnemyAttack(
+		CurrentAttackPhase, AttackAccumulator, DeltaTime, WindupDuration, RecoveryDuration, bInAttackRange);
+	CurrentAttackPhase = Step.Phase;
+
+	// 前摇结束的挥击
+	if (Step.bStrike)
 	{
-		if (ArenaCombat::AdvanceContactDamageTimer(ContactDamageAccumulator, DeltaTime, ContactDamageInterval))
+		if (ArenaCombat::ShouldEnemyStrikeConnect(Distance, AttackReach, IsTargetInvincible(Player)))
 		{
-			ApplyContactDamageTo(Player);
+			ApplyMeleeDamageTo(Player);
 		}
 	}
-	else
-	{
-		ContactDamageAccumulator = 0.f;
-	}
+
+	UpdateWindupVisual();
 }
 
-void AEnemyBase::ApplyContactDamageTo(AActor* Target)
+void AEnemyBase::ApplyMeleeDamageTo(AActor* Target)
 {
-	if (!Target || !ContactDamageEffect)
+	if (!Target || !MeleeDamageEffect)
 	{
 		return;
 	}
@@ -115,11 +122,39 @@ void AEnemyBase::ApplyContactDamageTo(AActor* Target)
 
 	FGameplayEffectContextHandle Ctx = SelfASC->MakeEffectContext();
 	Ctx.AddSourceObject(this);
-	FGameplayEffectSpecHandle Spec = SelfASC->MakeOutgoingSpec(ContactDamageEffect, 1.f, Ctx);
+	FGameplayEffectSpecHandle Spec = SelfASC->MakeOutgoingSpec(MeleeDamageEffect, 1.f, Ctx);
 	if (Spec.IsValid())
 	{
-		Spec.Data->SetSetByCallerMagnitude(FValorisGameplayTags::Data_Damage, ContactDamage);
+		Spec.Data->SetSetByCallerMagnitude(FValorisGameplayTags::Data_Damage, AttackDamage);
 		TargetASC->ApplyGameplayEffectSpecToSelf(*Spec.Data.Get());
+	}
+}
+
+bool AEnemyBase::IsTargetInvincible(AActor* Target) const
+{
+	if (UAbilitySystemComponent* TargetASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(Target))
+	{
+		return TargetASC->HasMatchingGameplayTag(FValorisGameplayTags::State_Invincible);
+	}
+	return false;
+}
+
+void AEnemyBase::UpdateWindupVisual()
+{
+	USkeletalMeshComponent* MeshComp = GetMesh();
+	if (!MeshComp)
+	{
+		return;
+	}
+
+	if (CurrentAttackPhase == ArenaCombat::EEnemyAttackPhase::WindingUp)
+	{
+		const float Alpha = WindupDuration > 0.f ? FMath::Clamp(AttackAccumulator / WindupDuration, 0.f, 1.f) : 1.f;
+		MeshComp->SetRelativeScale3D(InitialMeshScale * FMath::Lerp(1.f, 1.15f, Alpha));
+	}
+	else
+	{
+		MeshComp->SetRelativeScale3D(InitialMeshScale);
 	}
 }
 
