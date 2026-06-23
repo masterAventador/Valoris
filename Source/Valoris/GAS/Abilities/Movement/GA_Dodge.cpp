@@ -57,6 +57,8 @@ void UGA_Dodge::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const F
 	}
 
 	// 播放动画（如有）
+	// 注意：M5 接入翻滚动画时需决定技能结束由「移动/定时器」还是「montage」单一驱动，
+	// 避免 montage 完成/混出 与 定时器/距离完成 两条路径竞争各自调用 EndAbility。
 	if (AbilityMontage)
 	{
 		Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
@@ -104,6 +106,14 @@ void UGA_Dodge::PerformDodge()
 
 void UGA_Dodge::OnDodgeEnd()
 {
+	// 清理统一收口到 EndAbility，这里只负责触发结束
+	EndAbility(GetCurrentAbilitySpecHandle(), CurrentActorInfo, GetCurrentActivationInfo(), true, false);
+}
+
+void UGA_Dodge::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
+	const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled)
+{
+	// 所有终止路径（正常、montage 驱动、外部取消、中断、CommitAbility 失败）都经此幂等清理恰好一次
 	if (UWorld* World = GetWorld())
 	{
 		World->GetTimerManager().ClearTimer(DodgeTimerHandle);
@@ -115,5 +125,5 @@ void UGA_Dodge::OnDodgeEnd()
 		ASC->RemoveLooseGameplayTag(FValorisGameplayTags::State_Invincible);
 	}
 
-	EndAbility(GetCurrentAbilitySpecHandle(), CurrentActorInfo, GetCurrentActivationInfo(), true, false);
+	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
 }
