@@ -59,6 +59,10 @@ void AAricHero::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 		{
 			EIC->BindAction(AttackAction, ETriggerEvent::Started, this, &AAricHero::OnAttackInput);
 		}
+		if (DodgeAction)
+		{
+			EIC->BindAction(DodgeAction, ETriggerEvent::Started, this, &AAricHero::OnDodgeInput);
+		}
 	}
 }
 
@@ -106,6 +110,16 @@ void AAricHero::OnAttackInput()
 	{
 		FGameplayTagContainer AbilityTags;
 		AbilityTags.AddTag(FValorisGameplayTags::Ability_Melee_Single_Aric_Attack);
+		ASC->TryActivateAbilitiesByTag(AbilityTags);
+	}
+}
+
+void AAricHero::OnDodgeInput()
+{
+	if (UAbilitySystemComponent* ASC = GetAbilitySystemComponent())
+	{
+		FGameplayTagContainer AbilityTags;
+		AbilityTags.AddTag(FValorisGameplayTags::Ability_Movement_Aric_Dodge);
 		ASC->TryActivateAbilitiesByTag(AbilityTags);
 	}
 }

@@ -41,7 +41,7 @@ struct FValorisGameplayTags
 	static FGameplayTag Ability_Ranged_Single_Tower_Attack;			// Ability.Ranged.Single.Tower.Attack - 塔攻击
 
 	// --- 位移 (Movement) ---
-	static FGameplayTag Ability_Movement_Aric_Charge;				// Ability.Movement.Aric.Charge - Aric 冲锋 (E)
+	static FGameplayTag Ability_Movement_Aric_Dodge;				// Ability.Movement.Aric.Dodge - Aric 闪避翻滚 (空格)
 
 	// --- 增益 (Buff) ---
 	static FGameplayTag Ability_Buff_Aric_BattleCry;				// Ability.Buff.Aric.BattleCry - Aric 战吼 (R)

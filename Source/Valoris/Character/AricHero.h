@@ -28,6 +28,9 @@ protected:
 	// 左键攻击输入（激活 Aric 普攻技能）
 	void OnAttackInput();
 
+	// 空格闪避输入（激活闪避技能）
+	void OnDodgeInput();
+
 	// 顶下相机弹簧臂
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
 	TObjectPtr<class USpringArmComponent> CameraBoom;
@@ -43,4 +46,8 @@ protected:
 	// 攻击 InputAction（编辑器里指向左键 IA_Attack）
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
 	TObjectPtr<class UInputAction> AttackAction;
+
+	// 闪避 InputAction（编辑器里指向空格 IA_Dodge）
+	UPROPERTY(EditDefaultsOnly, Category = "Input")
+	TObjectPtr<class UInputAction> DodgeAction;
 };

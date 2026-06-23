@@ -20,7 +20,7 @@ FGameplayTag FValorisGameplayTags::Ability_Melee_AOE_Aric_WhirlwindSlash;
 // 远程单体
 FGameplayTag FValorisGameplayTags::Ability_Ranged_Single_Tower_Attack;
 // 位移
-FGameplayTag FValorisGameplayTags::Ability_Movement_Aric_Charge;
+FGameplayTag FValorisGameplayTags::Ability_Movement_Aric_Dodge;
 // 增益
 FGameplayTag FValorisGameplayTags::Ability_Buff_Aric_BattleCry;
 
@@ -99,9 +99,9 @@ void FValorisGameplayTags::InitializeNativeTags()
 	);
 
 	// --- 位移 (Movement) ---
-	Ability_Movement_Aric_Charge = Manager.AddNativeGameplayTag(
-		FName("Ability.Movement.Aric.Charge"),
-		FString("Aric charge ability (E) - movement with damage")
+	Ability_Movement_Aric_Dodge = Manager.AddNativeGameplayTag(
+		FName("Ability.Movement.Aric.Dodge"),
+		FString("Aric dodge roll ability (Space) - movement with i-frames")
 	);
 
 	// --- 增益 (Buff) ---
