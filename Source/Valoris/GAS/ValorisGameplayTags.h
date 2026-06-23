@@ -25,6 +25,7 @@ struct FValorisGameplayTags
 	static FGameplayTag State_Dead;				// State.Dead - 死亡状态
 	static FGameplayTag State_Stunned;			// State.Stunned - 眩晕状态
 	static FGameplayTag State_Buffed;			// State.Buffed - 增益状态
+	static FGameplayTag State_Invincible;		// State.Invincible - 无敌（闪避无敌帧）
 
 	// ========== 技能标签（按类型分类） ==========
 	// 格式: Ability.[类型].[角色].[技能名]

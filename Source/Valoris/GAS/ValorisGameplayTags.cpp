@@ -10,6 +10,7 @@ FGameplayTag FValorisGameplayTags::Data_Damage;
 FGameplayTag FValorisGameplayTags::State_Dead;
 FGameplayTag FValorisGameplayTags::State_Stunned;
 FGameplayTag FValorisGameplayTags::State_Buffed;
+FGameplayTag FValorisGameplayTags::State_Invincible;
 FGameplayTag FValorisGameplayTags::Ability_Attack;
 // 近战单体
 FGameplayTag FValorisGameplayTags::Ability_Melee_Single_Aric_Attack;
@@ -58,6 +59,11 @@ void FValorisGameplayTags::InitializeNativeTags()
 	State_Buffed = Manager.AddNativeGameplayTag(
 		FName("State.Buffed"),
 		FString("Character has active buff")
+	);
+
+	State_Invincible = Manager.AddNativeGameplayTag(
+		FName("State.Invincible"),
+		FString("Character is invincible (dodge i-frames)")
 	);
 
 	// 通用技能标签

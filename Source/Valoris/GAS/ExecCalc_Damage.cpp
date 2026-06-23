@@ -38,6 +38,12 @@ void UExecCalc_Damage::Execute_Implementation(const FGameplayEffectCustomExecuti
 	EvaluateParams.SourceTags = Spec.CapturedSourceTags.GetAggregatedTags();
 	EvaluateParams.TargetTags = Spec.CapturedTargetTags.GetAggregatedTags();
 
+	// 目标处于无敌（闪避无敌帧）则不结算任何伤害
+	if (EvaluateParams.TargetTags && EvaluateParams.TargetTags->HasTag(FValorisGameplayTags::State_Invincible))
+	{
+		return;
+	}
+
 	// 从 SetByCaller 获取基础伤害（已经在 GA 里算好了 AttackPower * DamageMultiplier）
 	float BaseDamage = Spec.GetSetByCallerMagnitude(FValorisGameplayTags::Data_Damage, false, 0.f);
 
