@@ -4,6 +4,7 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Components/CapsuleComponent.h"
 #include "EnhancedInputComponent.h"
 #include "InputActionValue.h"
 #include "GameFramework/PlayerController.h"
@@ -42,6 +43,21 @@ AAricHero::AAricHero()
 	{
 		// 朝向由鼠标决定（见 Tick），不跟随移动方向
 		Move->bOrientRotationToMovement = false;
+	}
+}
+
+void AAricHero::BeginPlay()
+{
+	Super::BeginPlay();
+
+	// 玩家与敌人不做物理阻挡：移动方扫掠的阻挡由移动者自身碰撞响应决定，
+	// 敌人虽已 Ignore Pawn，但玩家走/滚向敌人时是玩家在移动，玩家自身若 Block Pawn
+	// 仍会被挡停。让玩家胶囊对 Pawn 设 Ignore，玩家即可自由穿过敌人（含闪避穿透）；
+	// 墙体（WorldStatic）仍正常阻挡。放 BeginPlay 而非构造函数：蓝图序列化的胶囊碰撞
+	// 配置会覆盖构造函数默认，运行时设置才必定生效。
+	if (UCapsuleComponent* Capsule = GetCapsuleComponent())
+	{
+		Capsule->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
 	}
 }
 

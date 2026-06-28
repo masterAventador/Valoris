@@ -3,6 +3,8 @@
 #include "EnemyBase.h"
 #include "EnemyAIController.h"
 #include "EnemyPath.h"
+#include "Components/CapsuleComponent.h"
+#include "Components/StaticMeshComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Components/WidgetComponent.h"
 #include "../GAS/ValorisAttributeSet.h"
@@ -43,6 +45,26 @@ void AEnemyBase::BeginPlay()
 	if (GetMesh())
 	{
 		InitialMeshScale = GetMesh()->GetRelativeScale3D();
+	}
+
+	// 敌人之间不互相阻挡（避免相互挤死卡住）；同时让玩家闪避能穿过敌人。
+	// 放 BeginPlay 而非构造函数：蓝图序列化的胶囊碰撞配置会覆盖构造函数默认，
+	// 运行时设置才必定生效。阻挡需双方都 Block，敌人对 Pawn 通道设 Ignore
+	// 即可解除与其它敌人/玩家的物理阻挡；墙体（WorldStatic）仍正常阻挡。
+	// 近战靠 Tick 里的距离判定结算，不依赖物理接触。
+	if (UCapsuleComponent* Capsule = GetCapsuleComponent())
+	{
+		Capsule->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
+	}
+
+	// 关掉占位静态网格（蓝图里的 Cube）的碰撞：它当前是 BlockAllDynamic、比胶囊大，
+	// 才是真正卡住敌人互挤、挡住玩家穿行的元凶。真正的碰撞体是胶囊，占位视觉网格不应参与碰撞。
+	// 用 SetCollisionEnabled 在运行时设置（会重建物理状态、正确刷新），覆盖蓝图序列化值。
+	TArray<UStaticMeshComponent*> StaticMeshes;
+	GetComponents<UStaticMeshComponent>(StaticMeshes);
+	for (UStaticMeshComponent* StaticMesh : StaticMeshes)
+	{
+		StaticMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	}
 }
 

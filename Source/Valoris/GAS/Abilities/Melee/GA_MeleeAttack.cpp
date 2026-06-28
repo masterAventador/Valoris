@@ -35,8 +35,12 @@ void UGA_MeleeAttack::OnEventReceived(FGameplayEventData Payload)
 	FCollisionQueryParams Params;
 	Params.AddIgnoredActor(Avatar);
 
+	// 按对象类型 Pawn 查询（而非追踪通道）：只看目标是不是 Pawn 类型，与其 Pawn 通道响应无关。
+	// 敌人胶囊对 Pawn 通道设了 Ignore（为了物理上不阻挡彼此/玩家），用 ByChannel 会扫不到，
+	// 用 ByObjectType 仍能命中敌人胶囊，命中判定与物理阻挡彻底解耦。
 	TArray<FHitResult> Hits;
-	Avatar->GetWorld()->SweepMultiByChannel(Hits, Origin, Origin, FQuat::Identity, ECC_Pawn, Sphere, Params);
+	FCollisionObjectQueryParams ObjectParams(ECC_Pawn);
+	Avatar->GetWorld()->SweepMultiByObjectType(Hits, Origin, Origin, FQuat::Identity, ObjectParams, Sphere, Params);
 
 	TSet<AActor*> Damaged;
 	for (const FHitResult& Hit : Hits)
