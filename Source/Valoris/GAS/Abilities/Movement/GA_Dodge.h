@@ -52,6 +52,9 @@ private:
 	/** 翻滚定时器句柄 */
 	FTimerHandle DodgeTimerHandle;
 
+	/** 翻滚结束（按时长）定时器句柄 */
+	FTimerHandle EndTimerHandle;
+
 	/** 翻滚结束 */
 	void OnDodgeEnd();
 };

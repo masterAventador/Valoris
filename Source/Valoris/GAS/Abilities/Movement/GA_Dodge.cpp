@@ -68,7 +68,6 @@ void UGA_Dodge::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const F
 	{
 		World->GetTimerManager().SetTimer(DodgeTimerHandle, this, &UGA_Dodge::PerformDodge, 0.016f, true);
 
-		FTimerHandle EndTimerHandle;
 		World->GetTimerManager().SetTimer(EndTimerHandle, this, &UGA_Dodge::OnDodgeEnd, Duration, false);
 	}
 }
@@ -117,6 +116,7 @@ void UGA_Dodge::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGamep
 	if (UWorld* World = GetWorld())
 	{
 		World->GetTimerManager().ClearTimer(DodgeTimerHandle);
+		World->GetTimerManager().ClearTimer(EndTimerHandle);
 	}
 
 	// 移除无敌帧
